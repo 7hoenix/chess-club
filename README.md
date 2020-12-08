@@ -1,5 +1,24 @@
 # ChessClub
 
+NOTE:
+Project bootstrapped with this approach: https://blog.ispirata.com/get-started-with-elm-0-19-and-phoenix-1-4-291beebb350b
+
+# Usage
+
+```bash
+mix phx.server
+```
+
+Install an elm dependency:
+
+```bash
+cd assets
+npm run elm install mdgriffith/elm-ui
+```
+
+
+BEGIN GENERATED
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
@@ -18,3 +37,5 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+END GENERATED
