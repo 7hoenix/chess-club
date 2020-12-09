@@ -42,5 +42,7 @@ rel/*key*
 .terraform*
 terraform.tfstate
 terraform.tfstate.backup
+secret.auto.tfvars
 
 .idea
+
