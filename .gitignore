@@ -36,3 +36,9 @@ elm-stuff
 /priv/static/
 
 .envrc
+
+rel/*key*
+
+.terraform*
+terraform.tfstate
+terraform.tfstate.backup

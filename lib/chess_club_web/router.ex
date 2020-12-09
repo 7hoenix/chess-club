@@ -13,10 +13,14 @@ defmodule ChessClubWeb.Router do
     plug :accepts, ["json"]
   end
 
+
   scope "/", ChessClubWeb do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    # Added for use while troubleshooting
+    get "/version", VersionController, :index
   end
 
   # Other scopes may use custom stacks.
