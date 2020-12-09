@@ -7,11 +7,15 @@
 # General application configuration
 use Mix.Config
 
+port = 4000
+
 config :chess_club,
-  ecto_repos: [ChessClub.Repo]
+  ecto_repos: [ChessClub.Repo],
+  port: port
 
 # Configures the endpoint
 config :chess_club, ChessClubWeb.Endpoint,
+  http: [port: port],
   url: [host: "localhost"],
   secret_key_base: "AzWgyxx56tlcU7NWss7Dg5GWQvV9sBBVHoXVRIHsNQEzlf9Q6AdJwiF4TnWXn7v0",
   render_errors: [view: ChessClubWeb.ErrorView, accepts: ~w(html json), layout: false],

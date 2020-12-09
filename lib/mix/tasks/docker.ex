@@ -1,6 +1,5 @@
 defmodule Mix.Tasks.Docker do
   use Mix.Task
-  use Mix.Tasks.Utils
 
   @shortdoc "Docker utilities for building releases."
   def run([env]) do
@@ -14,10 +13,14 @@ defmodule Mix.Tasks.Docker do
   end
 
   defp build_image(env) do
-    docker("build --build-arg ENV=#{env} -t #{app_name()}:latest .")
+    docker("build --build-arg ENV=#{env} SECRET_KEY_BASE='Nyvf7xqh3p18qU6CVUpwjHzlR7ZOaEwRI7e0vuTQdvjQMkfbTBSbpiU+qNMasnxf' -t #{app_name()}:latest .")
   end
 
   defp docker(cmd) do
     System.cmd("docker", String.split(cmd, " "), into: IO.stream(:stdio, :line))
+  end
+
+  defp app_name() do
+    "chess_club"
   end
 end

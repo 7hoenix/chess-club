@@ -16,6 +16,9 @@ cd assets
 npm run elm install mdgriffith/elm-ui
 ```
 
+TODO:
+
+- Use python3 on webserver
 
 BEGIN GENERATED
 
