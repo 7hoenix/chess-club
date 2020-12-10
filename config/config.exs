@@ -7,11 +7,24 @@
 # General application configuration
 use Mix.Config
 
+
+config :chess_club, ChessClub.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "chess_club",
+  username: System.get_env("DATBASE_USER"),
+  password: "pass",
+  hostname: "localhost",
+  port: 5432,
+  ssl: true
+
 port = 4000
 
 config :chess_club,
   ecto_repos: [ChessClub.Repo],
-  port: port
+  port: port,
+  secret_key_base: System.get_env("SECRET_KEY_BASE"),
+  hostname: "localhost",
+  database_url: System.get_env("DATABASE_URL")
 
 # Configures the endpoint
 config :chess_club, ChessClubWeb.Endpoint,

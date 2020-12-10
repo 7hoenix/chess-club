@@ -16,6 +16,20 @@ cd assets
 npm run elm install mdgriffith/elm-ui
 ```
 
+Deployment.
+
+```bash
+MIX_ENV=prod mix docker.build prod
+MIX_ENV=prod mix ansible.playbook deploy
+```
+
+Setting up a fresh environment on AWS. Must have environment variables in place.
+
+```bash
+cd rel/terraform
+terraform apply
+```
+
 TODO:
 
 - Use python3 on webserver

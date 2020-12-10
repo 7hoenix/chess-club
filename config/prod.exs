@@ -13,6 +13,22 @@ config :chess_club, ChessClubWeb.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+db_username = System.get_env("DATABASE_USER_PROD")
+db_password = System.get_env("DATABASE_PASSWORD_PROD")
+db_hostname = System.get_env("DATABASE_HOST_PROD")
+
+config :chess_club,
+  secret_key_base: System.get_env("SECRET_KEY_BASE_PROD"),
+  db_username: db_username,
+  db_password: db_password,
+  db_hostname: db_hostname
+
+config :chess_club, ChessClub.Repo,
+  username: db_username,
+  password: db_password,
+  hostname: db_hostname,
+  show_sensitive_data_on_connection_error: true
+
 # Do not print debug messages in production
 config :logger, level: :info
 

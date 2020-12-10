@@ -1,6 +1,7 @@
 ---
+
 all:
   children:
     webservers:
       hosts:
-        ec2-54-215-138-190.us-west-1.compute.amazonaws.com
+        INSERT_REAL_HOSTS
