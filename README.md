@@ -23,6 +23,14 @@ MIX_ENV=prod mix docker.build prod
 MIX_ENV=prod mix ansible.playbook deploy
 ```
 
+Migrating the database
+
+SSH into the host and then run:
+
+```bash
+/opt/chess_club/bin/prod eval "ChessClub.Release.migrate"
+```
+
 Setting up a fresh environment on AWS. Must have environment variables in place.
 
 ```bash
