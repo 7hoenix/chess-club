@@ -4,4 +4,4 @@ all:
   children:
     webservers:
       hosts:
-        INSERT_REAL_HOSTS
+        INSERT_HOSTS_HERE

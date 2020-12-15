@@ -10,7 +10,8 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :chess_club, ChessClubWeb.Endpoint,
-  url: [host: "example.com", port: 80],
+  http: [port: 4000],
+  url: [host: "club.7hoenix.com", port: 443, scheme: "https"],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 db_username = System.get_env("DATABASE_USER_PROD")
@@ -68,4 +69,4 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
-import_config "prod.secret.exs"
+# import_config "prod.secret.exs"

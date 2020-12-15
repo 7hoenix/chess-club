@@ -164,8 +164,8 @@ resource "aws_security_group" "chess_club_instance" {
 
   ingress {
     protocol        = "tcp"
-    from_port       = "4000"
-    to_port         = "4000"
+    from_port       = "80"
+    to_port         = "80"
     security_groups = [aws_security_group.chess_club_alb.id]
   }
 
@@ -366,20 +366,27 @@ resource "aws_alb" "chess_club" {
 }
 
 # -----------------------------------------------------------------------------
-# Create the ALB target group for ECS
+# Create the ALB target group for EC2
 # -----------------------------------------------------------------------------
 
 resource "aws_alb_target_group" "chess_club" {
   name        = "chess-club-alb"
-  port        = 8080
+  port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.chess_club.id
-  target_type = "ip"
+  target_type = "instance"
 
   health_check {
-    path    = "/healthz"
+    path    = "/version"
     matcher = "200"
   }
+}
+
+resource "aws_alb_target_group_attachment" "chess_club" {
+  count             = local.az_count
+  target_group_arn  = aws_alb_target_group.chess_club.arn
+  target_id         = aws_instance.chess_club[count.index].id
+  port              = 80
 }
 
 # -----------------------------------------------------------------------------

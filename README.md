@@ -12,13 +12,25 @@ mix phx.server
 Install an elm dependency:
 
 ```bash
-cd assets
+pushd assets
 npm run elm install mdgriffith/elm-ui
+popd
 ```
 
 Deployment.
 
 ```bash
+./scripts/deploy_prod.bash
+```
+
+OR use the commands:
+
+```bash
+pushd assets
+npm run deploy
+popd
+
+mix phx.digest
 MIX_ENV=prod mix docker.build prod
 MIX_ENV=prod mix ansible.playbook deploy
 ```
@@ -36,6 +48,8 @@ Setting up a fresh environment on AWS. Must have environment variables in place.
 ```bash
 cd rel/terraform
 terraform apply
+
+MIX_ENV=prod mix ansible.playbook setup
 ```
 
 TODO:
