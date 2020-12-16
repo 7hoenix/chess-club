@@ -52,10 +52,6 @@ terraform apply
 MIX_ENV=prod mix ansible.playbook setup
 ```
 
-TODO:
-
-- Use python3 on webserver
-
 BEGIN GENERATED
 
 To start your Phoenix server:

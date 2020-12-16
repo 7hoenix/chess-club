@@ -7,8 +7,8 @@
   tasks:
     # Ensure python is installed, the debian ec2 instance does by default
     # Ansible will show us a warning about that
-    - name: Install python 2
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    - name: Install python 3
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal)
 
     # Add the deploy group set in ../vars/main.yml if it does not exists
     - name: "Add {{ deploy_group }} group"
