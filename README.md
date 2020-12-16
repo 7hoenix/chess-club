@@ -19,6 +19,13 @@ popd
 
 Deployment.
 
+First time setup
+
+```bash
+cp rel/ansible/inventory/main.yml{.example,}
+```
+Edit inventory file with actual nodes.
+
 ```bash
 ./scripts/deploy_prod.bash
 ```
