@@ -27,8 +27,7 @@ config :chess_club,
 config :chess_club, ChessClub.Repo,
   username: db_username,
   password: db_password,
-  hostname: db_hostname,
-  show_sensitive_data_on_connection_error: true
+  hostname: db_hostname
 
 # Do not print debug messages in production
 config :logger, level: :info
@@ -69,4 +68,3 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
-# import_config "prod.secret.exs"
