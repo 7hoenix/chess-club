@@ -142,6 +142,13 @@ resource "aws_security_group" "chess_club_alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -390,10 +397,11 @@ resource "aws_alb_target_group_attachment" "chess_club" {
 }
 
 # -----------------------------------------------------------------------------
-# Create the ALB listener
+# Create the ALB listeners
 # -----------------------------------------------------------------------------
 
-resource "aws_alb_listener" "chess_club" {
+# Forward on HTTPS
+resource "aws_alb_listener" "chess_club_https" {
   load_balancer_arn = aws_alb.chess_club.id
   port              = "443"
   protocol          = "HTTPS"
@@ -402,6 +410,23 @@ resource "aws_alb_listener" "chess_club" {
   default_action {
     target_group_arn = aws_alb_target_group.chess_club.id
     type             = "forward"
+  }
+}
+
+# Redirect HTTP to HTTPS
+resource "aws_alb_listener" "chess_club_http" {
+  load_balancer_arn = aws_alb.chess_club.id
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
