@@ -10,7 +10,13 @@ defmodule ChessClub.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: [
+        prod: [
+          include_executables_for: [:unix],
+          steps: [:assemble, :tar]
+        ]
+      ]
     ]
   end
 
@@ -20,7 +26,7 @@ defmodule ChessClub.MixProject do
   def application do
     [
       mod: {ChessClub.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :ssl]
     ]
   end
 

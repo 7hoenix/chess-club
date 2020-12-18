@@ -19,6 +19,11 @@ defmodule ChessClubWeb.Router do
     get "/", PageController, :index
   end
 
+  # Added for use while troubleshooting
+  scope "/version", ChessClubWeb do
+    get "/", VersionController, :index
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", ChessClubWeb do
   #   pipe_through :api

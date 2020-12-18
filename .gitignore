@@ -36,3 +36,15 @@ elm-stuff
 /priv/static/
 
 .envrc
+
+rel/*key*
+
+.terraform*
+terraform.tfstate
+terraform.tfstate.backup
+secret.auto.tfvars
+
+.idea
+
+# This is only here because we have not figured out how to pass variables to ansible
+rel/ansible/inventory/main.yml
