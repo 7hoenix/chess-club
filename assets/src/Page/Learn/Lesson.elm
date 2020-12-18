@@ -1,8 +1,7 @@
 module Page.Learn.Lesson exposing
-  ( Lesson
-  , decoder
-  )
-
+    ( Lesson
+    , decoder
+    )
 
 import Json.Decode as D
 
@@ -12,8 +11,9 @@ import Json.Decode as D
 
 
 type alias Lesson =
-  { title : String
-  }
+    { title : String
+    }
+
 
 
 -- DECODER
@@ -21,5 +21,5 @@ type alias Lesson =
 
 decoder : D.Decoder Lesson
 decoder =
-  D.map Lesson
-    (D.field "name" D.string)
+    D.map Lesson
+        (D.field "name" D.string)
