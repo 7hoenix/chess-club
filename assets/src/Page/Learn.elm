@@ -119,7 +119,7 @@ viewLearn lessons =
                     ]
 
             Success _ ->
-                div [ class "flex-shrink-0 text-xl font-medium text-black" ]
+                div [ class "flex-shrink-0 text-xl font-medium text-purple-600" ]
                     [ text "You don't seem to have any lessons." ]
         ]
 
