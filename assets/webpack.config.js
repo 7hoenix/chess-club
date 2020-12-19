@@ -28,6 +28,17 @@ module.exports = (env, options) => {
     module: {
       rules: [
         {
+          test: /\.elm$/,
+          exclude: [/elm-stuff/, /node_modules/],
+          use: {
+            loader: 'elm-webpack-loader',
+            options: {
+              debug: options.mode === "development",
+              optimize: options.mode === "production"
+            }
+          }
+        },
+        {
           test: /\.js$/,
           exclude: /node_modules/,
           use: {
@@ -35,22 +46,12 @@ module.exports = (env, options) => {
           }
         },
         {
-          test: /\.[s]?css$/,
+          test: /\.css$/,
           use: [
             MiniCssExtractPlugin.loader,
             'css-loader',
-            'postcss-loader',
+            'postcss-loader'
           ],
-        },
-        {
-          test: /\.elm$/,
-          exclude: [/elm-stuff/, /node_modules/],
-          use: {
-            loader: 'elm-webpack-loader',
-            options: {
-              debug: options.mode === "development"
-            }
-          }
         }
       ]
     },

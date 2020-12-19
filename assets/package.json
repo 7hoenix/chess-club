@@ -3,7 +3,8 @@
   "description": " ",
   "license": "MIT",
   "scripts": {
-    "deploy": "NODE_ENV=production webpack --mode production",
+    "build-tw": "postcss -o ../priv/static/css/app.css css/app.css",
+    "deploy": "npm run build-tw && NODE_ENV=production webpack --mode production",
     "watch": "webpack --mode development --watch",
     "elm": "elm"
   },
@@ -25,6 +26,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "postcss": "^8.2.1",
     "postcss-elm-tailwind": "^0.10.0",
+    "postcss-import": "^14.0.0",
     "postcss-loader": "^4.1.0",
     "tailwindcss": "^2.0.2",
     "terser-webpack-plugin": "^2.3.2",

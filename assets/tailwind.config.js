@@ -5,6 +5,7 @@ module.exports = {
     "../**/views/**/*.ex",
     "../**/live/**/*.ex",
     "./js/**/*.js",
+    './**/*.elm',
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
