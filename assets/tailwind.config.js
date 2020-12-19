@@ -7,7 +7,7 @@ module.exports = {
     "./js/**/*.js",
     './**/*.elm',
   ],
-  darkMode: false, // or 'media' or 'class'
+  darkMode: 'media', // or 'media' or 'class' or false
   theme: {
     extend: {},
   },

@@ -122,7 +122,7 @@ viewWarning warning =
 
 viewFooter : Html msg
 viewFooter =
-    footer [ class "container mx-auto p-8" ]
+    footer [ class "container mx-auto p-8 bg-white dark:bg-gray-800" ]
         [ div [ class "text-center" ]
             [ a [ class "grey-link", href "https://github.com/7hoenix/chess-club" ] [ text "Check out the code" ]
             , text " - © 2020 7hoenix Industries"
