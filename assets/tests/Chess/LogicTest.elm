@@ -5,97 +5,241 @@ import Expect exposing (..)
 import Test exposing (..)
 
 
+team =
+    Chess.Black
+
+
+monarch =
+    Chess.Piece Chess.Monarch team
+
+
+hand =
+    Chess.Piece Chess.Hand team
+
+
+bishop =
+    Chess.Piece Chess.Bishop team
+
+
+rook =
+    Chess.Piece Chess.Rook team
+
+
+diagonalMovesFromD4 =
+    [ -- North East
+      Chess.c3
+    , Chess.b2
+    , Chess.a1
+
+    -- South East
+    , Chess.c5
+    , Chess.b6
+    , Chess.a7
+
+    -- North West
+    , Chess.e3
+    , Chess.f2
+    , Chess.g1
+
+    -- South West
+    , Chess.e5
+    , Chess.f6
+    , Chess.g7
+    , Chess.h8
+    ]
+
+
+horizontalMovesFromD4 =
+    [ -- North
+      Chess.d3
+    , Chess.d2
+    , Chess.d1
+
+    -- South
+    , Chess.d5
+    , Chess.d6
+    , Chess.d7
+    , Chess.d8
+
+    -- West
+    , Chess.e4
+    , Chess.f4
+    , Chess.g4
+    , Chess.h4
+
+    -- East
+    , Chess.c4
+    , Chess.b4
+    , Chess.a4
+    ]
+
+
 all : Test
 all =
     describe "Chess"
         [ describe "canMoveTo" <|
-            [ test "single piece" <|
-                \() ->
-                    let
-                        team =
-                            Chess.Black
+            [ describe "single piece" <|
+                [ test "monarch movement" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.b2 monarch
 
-                        monarch =
-                            Chess.Monarch team
+                            game =
+                                Chess.init [ current ] team
 
-                        current =
-                            Chess.Occupied Chess.b2 monarch
+                            validSquares =
+                                [ Chess.a1
+                                , Chess.a2
+                                , Chess.a3
+                                , Chess.b1
+                                , Chess.b3
+                                , Chess.c1
+                                , Chess.c2
+                                , Chess.c3
+                                ]
+                        in
+                        Expect.true
+                            "Knows monarch moves"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [ Chess.b2 ])
+                                validSquares
+                            )
+                , test "monarch invalid moves" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.b2 monarch
 
-                        game =
-                            Chess.init [ current ] team
+                            game =
+                                Chess.init [ current ] team
 
-                        validSquares =
-                            [ Chess.a1
-                            , Chess.a2
-                            , Chess.a3
-                            , Chess.b1
-                            , Chess.b3
-                            , Chess.c1
-                            , Chess.c2
-                            , Chess.c3
-                            ]
-                    in
-                    Expect.true
-                        "Knows monarch moves"
-                        (List.all
-                            (\pos -> Chess.canMoveTo pos game == [ Chess.b2 ])
-                            validSquares
-                        )
-            , test "invalid moves" <|
-                \() ->
-                    let
-                        team =
-                            Chess.Black
+                            validSquares =
+                                [ Chess.a1
+                                , Chess.a2
+                                , Chess.a3
+                                , Chess.b1
+                                , Chess.b3
+                                , Chess.c1
+                                , Chess.c2
+                                , Chess.c3
+                                ]
 
-                        monarch =
-                            Chess.Monarch team
+                            otherSquares =
+                                List.filter (\s -> not (List.member s validSquares)) Chess.all
+                        in
+                        Expect.true
+                            "Not valid monarch movement"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [])
+                                otherSquares
+                            )
+                , test "bishop movement" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 bishop
 
-                        current =
-                            Chess.Occupied Chess.b2 monarch
+                            game =
+                                Chess.init [ current ] team
+                        in
+                        Expect.true
+                            "Knows bishop moves"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [ Chess.d4 ])
+                                diagonalMovesFromD4
+                            )
+                , test "bishop invalid moves" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 bishop
 
-                        game =
-                            Chess.init [ current ] team
+                            game =
+                                Chess.init [ current ] team
 
-                        validSquares =
-                            [ Chess.a1
-                            , Chess.a2
-                            , Chess.a3
-                            , Chess.b1
-                            , Chess.b3
-                            , Chess.c1
-                            , Chess.c2
-                            , Chess.c3
-                            ]
+                            otherSquares =
+                                List.filter (\s -> not (List.member s diagonalMovesFromD4)) Chess.all
+                        in
+                        Expect.true
+                            "Not valid bishop movement"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [])
+                                otherSquares
+                            )
+                , test "rook movement" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 rook
 
-                        otherSquares =
-                            List.filter (\s -> not (List.member s validSquares)) Chess.all
-                    in
-                    Expect.true
-                        "Not valid monarch movement"
-                        (List.all
-                            (\pos -> Chess.canMoveTo pos game == [])
-                            otherSquares
-                        )
+                            game =
+                                Chess.init [ current ] team
+                        in
+                        Expect.true
+                            "Knows rook moves"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [ Chess.d4 ])
+                                horizontalMovesFromD4
+                            )
+                , test "Rook invalid moves" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 rook
 
-            --validSquares [ Chess.a1 ]
-            --, test "multi" <|
-            --    \() ->
-            --        let
-            --            team =
-            --                Chess.Black
-            --
-            --            monarch =
-            --                Chess.Monarch team
-            --
-            --            current =
-            --                Chess.Occupied Chess.a1 monarch
-            --
-            --            game =
-            --                Chess.init [ current ] team
-            --
-            --            validSquares =
-            --                Chess.canMoveTo Chess.a2 game
-            --        in
-            --        Expect.equal validSquares [ Chess.a1 ]
+                            game =
+                                Chess.init [ current ] team
+
+                            otherSquares =
+                                List.filter (\s -> not (List.member s horizontalMovesFromD4)) Chess.all
+                        in
+                        Expect.true
+                            "Not valid rook movement"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [])
+                                otherSquares
+                            )
+                , test "hand movement" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 hand
+
+                            game =
+                                Chess.init [ current ] team
+                        in
+                        Expect.true
+                            "Knows hand moves"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [ Chess.d4 ])
+                                (horizontalMovesFromD4 ++ diagonalMovesFromD4)
+                            )
+                , test "Hand invalid moves" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.d4 hand
+
+                            game =
+                                Chess.init [ current ] team
+
+                            otherSquares =
+                                List.filter
+                                    (\s ->
+                                        not
+                                            (List.member s
+                                                (horizontalMovesFromD4 ++ diagonalMovesFromD4)
+                                            )
+                                    )
+                                    Chess.all
+                        in
+                        Expect.true
+                            "Not valid hand movement"
+                            (List.all
+                                (\pos -> Chess.canMoveTo pos game == [])
+                                otherSquares
+                            )
+                ]
             ]
         ]
