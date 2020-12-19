@@ -36,4 +36,21 @@ all =
             \() ->
                 start
                     |> expectViewHas [ text initialStartingState ]
+
+        --, test "is able to move a piece" <|
+        --    \() ->
+        --        let
+        --            team = Chess.Black
+        --            monarch = Chess.Monarch team
+        --            squareFrom = Chess.Square Chess.A1 monarch
+        --            squareTo = Chess.Square Chess.A2 Nothing
+        --            game = Chess.init [square]
+        --        in
+        --            startWithGame game
+        --            |> expectSquareHasPiece squareFrom (Just monarch)
+        --            |> expectSquareHasPiece squareTo Nothing
+        --            |> clickSquare squareFrom
+        --            |> clickSquare squareTo
+        --            |> expectSquareHasPiece squareFrom Nothing
+        --            |> expectSquareHasPiece squareTo (Just monarch)
         ]
