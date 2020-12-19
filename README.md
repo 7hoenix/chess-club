@@ -33,10 +33,11 @@ Edit inventory file with actual nodes.
 OR use the commands:
 
 ```bash
-pushd assets
-npm run deploy
-popd
+rm -rf priv/static
+mkdir -p priv/static
+npm run deploy --prefix assets
 
+mix phx.digest.clean
 mix phx.digest
 MIX_ENV=prod mix docker.build prod
 MIX_ENV=prod mix ansible.playbook deploy

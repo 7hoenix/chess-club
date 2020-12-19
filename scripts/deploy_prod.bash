@@ -2,6 +2,8 @@
 
 set -e
 
+rm -rf priv/static
+mkdir -p priv/static
 npm run deploy --prefix assets
 
 mix phx.digest.clean
