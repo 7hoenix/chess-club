@@ -85,6 +85,7 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ lazy viewLearn model.scenarios
+        , viewBoard
         ]
     }
 
@@ -95,7 +96,7 @@ view model =
 
 viewLearn : Scenarios -> Html Msg
 viewLearn scenarios =
-    div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4" ]
+    div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center" ]
         [ case scenarios of
             Failure ->
                 div Problem.styles (Problem.offline "scenarios.json")
@@ -124,4 +125,60 @@ viewScenario scenario =
     div []
         [ h3 [] [ text "Scenario Starting state" ]
         , p [ class "starting-state" ] [ text scenario.startingState ]
+        , viewBoard
         ]
+
+
+viewBoard : Html msg
+viewBoard =
+    div [ class "grid grid-rows-8 grid-flow-col gap-1" ]
+        (List.concat (List.map viewRow (List.reverse (List.range 1 8))))
+
+
+
+--viewBoard : Html msg
+--viewBoard =
+--    div [ class "grid grid-cols-8 gap-1" ]
+--        (List.concat (List.map viewRow (List.reverse (List.range 1 8))))
+
+
+viewRow : Int -> List (Html msg)
+viewRow row =
+    List.map (viewCell row) (List.range 1 8)
+
+
+viewCell : Int -> Int -> Html msg
+viewCell row column =
+    div [ class "bg-gray-300 rounded-md flex items-center justify-center text-2xl font-extrabold " ]
+        [ text <| getLetter column ++ " " ++ String.fromInt row ]
+
+
+getLetter : Int -> String
+getLetter i =
+    case i of
+        1 ->
+            "a"
+
+        2 ->
+            "b"
+
+        3 ->
+            "c"
+
+        4 ->
+            "d"
+
+        5 ->
+            "e"
+
+        6 ->
+            "f"
+
+        7 ->
+            "g"
+
+        8 ->
+            "h"
+
+        _ ->
+            "NOT VALID"
