@@ -9,6 +9,10 @@ team =
     Chess.Black
 
 
+opponentTeam =
+    Chess.White
+
+
 monarch =
     Chess.Piece Chess.Monarch team
 
@@ -23,6 +27,10 @@ bishop =
 
 rook =
     Chess.Piece Chess.Rook team
+
+
+opponentRook =
+    Chess.Piece Chess.Rook opponentTeam
 
 
 diagonalMovesFromD4 =
@@ -234,11 +242,32 @@ all =
                                     )
                                     Chess.all
                         in
-                        Expect.true
-                            "Not valid hand movement"
-                            (List.all
-                                (\pos -> Chess.canMoveTo pos game == [])
+                        Expect.equal []
+                            (List.filter
+                                (\pos -> Chess.canMoveTo pos game /= [])
                                 otherSquares
+                            )
+                ]
+            , describe "more pieces" <|
+                [ test "movement not allowed if blocked by pieces" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Chess.a1 hand
+
+                            friendly position =
+                                Chess.Occupied position rook
+
+                            opponent position =
+                                Chess.Occupied position opponentRook
+
+                            game =
+                                Chess.init [ friendly Chess.a2, current, friendly Chess.b1, opponent Chess.b2 ] team
+                        in
+                        Expect.equal [ Chess.b2 ]
+                            (List.filter
+                                (\pos -> List.member Chess.a1 (Chess.canMoveTo pos game))
+                                Chess.all
                             )
                 ]
             ]
