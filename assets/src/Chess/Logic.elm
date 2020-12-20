@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 
 type Team
     = Black
+    | White
 
 
 type PieceType
@@ -64,14 +65,14 @@ pieceCanMoveTo moveTo occupiedSquares occupied =
         Just (Piece Monarch _) ->
             monarchCanMoveTo moveTo occupiedSquares occupied
 
-        Just (Piece Hand _) ->
-            canMoveToRepeating moveTo occupiedSquares occupied (horizontalMovement ++ diagonalMovement)
+        Just (Piece Hand team) ->
+            canMoveToRepeating moveTo occupiedSquares occupied team (horizontalMovement ++ diagonalMovement)
 
-        Just (Piece Bishop _) ->
-            canMoveToRepeating moveTo occupiedSquares occupied diagonalMovement
+        Just (Piece Bishop team) ->
+            canMoveToRepeating moveTo occupiedSquares occupied team diagonalMovement
 
-        Just (Piece Rook _) ->
-            canMoveToRepeating moveTo occupiedSquares occupied horizontalMovement
+        Just (Piece Rook team) ->
+            canMoveToRepeating moveTo occupiedSquares occupied team horizontalMovement
 
 
 canMoveTo : Position -> Game -> List Position
@@ -90,9 +91,9 @@ monarchCanMoveTo moveTo occupiedSquares occupied =
         (horizontalMovement ++ diagonalMovement)
 
 
-canMoveToRepeating : Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> List ( Int, Int ) -> Bool
-canMoveToRepeating moveTo occupiedSquares occupied =
-    List.any (\vector -> checkMoveInDirectionRepeating vector moveTo occupiedSquares occupied)
+canMoveToRepeating : Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Team -> List ( Int, Int ) -> Bool
+canMoveToRepeating moveTo occupiedSquares occupied team =
+    List.any (\vector -> checkMoveInDirectionRepeating vector moveTo occupiedSquares occupied team)
 
 
 horizontalMovement =
@@ -164,23 +165,136 @@ checkMoveInDirection ( columnDelta, rowDeltay ) (Position column row) occupiedSq
         ( nextColumn, nextRow ) == ( column, row )
 
 
-checkMoveInDirectionRepeating : ( Int, Int ) -> Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Bool
-checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( currentColumn, currentRow ) =
+
+--all : List Position
+--all =
+--    [ a8
+--    , b8
+--    , c8
+--    , d8
+--    , e8
+--    , f8
+--    , g8
+--    , h8
+--    , a7
+--    , b7
+--    , c7
+--    , d7
+--    , e7
+--    , f7
+--    , g7
+--    , h7
+--    , a6
+--    , b6
+--    , c6
+--    , d6
+--    , e6
+--    , f6
+--    , g6
+--    , h6
+--    , a5
+--    , b5
+--    , c5
+--    , d5
+--    , e5
+--    , f5
+--    , g5
+--    , h5
+--    , a4
+--    , b4
+--    , c4
+--    , d4
+--    , e4
+--    , f4
+--    , g4
+--    , h4
+--    , a3
+--    , b3
+--    , c3
+--    , d3
+--    , e3
+--    , f3
+--    , g3
+--    , h3
+--    , a2
+--    , b2
+--    , c2
+--    , d2
+--    , e2
+--    , f2
+--    , g2
+--    , h2
+--    , a1
+--    , b1
+--    , c1
+--    , d1
+--    , e1
+--    , f1
+--    , g1
+--    , h1
+--    ]
+--checkMoveInDirectionRepeating : ( Int, Int ) -> Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Bool
+--checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( currentColumn, currentRow ) =
+--    let
+--        nextColumn =
+--            columnDelta + currentColumn
+--
+--        nextRow =
+--            rowDeltay + currentRow
+--    in
+--    if nextColumn == 0 || nextRow == 0 || nextColumn == 9 || nextRow == 9 then
+--        False
+--
+--    else if ( nextColumn, nextRow ) == ( column, row ) then
+--        True
+--
+--    else
+--        checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( nextColumn, nextRow )
+
+
+checkMoveInDirectionRepeating : ( Int, Int ) -> Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Team -> Bool
+checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( currentColumn, currentRow ) team =
     let
         nextColumn =
             columnDelta + currentColumn
 
         nextRow =
             rowDeltay + currentRow
+
+        piece =
+            Dict.get ( nextColumn, nextRow ) occupiedSquares
     in
     if nextColumn == 0 || nextRow == 0 || nextColumn == 9 || nextRow == 9 then
         False
 
-    else if ( nextColumn, nextRow ) == ( column, row ) then
+    else if ( nextColumn, nextRow ) == ( column, row ) && not (occupiedByFriendly piece team) then
         True
 
+    else if occupiedSquare piece then
+        False
+
     else
-        checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( nextColumn, nextRow )
+        checkMoveInDirectionRepeating ( columnDelta, rowDeltay ) (Position column row) occupiedSquares ( nextColumn, nextRow ) team
+
+
+occupiedSquare : Maybe Piece -> Bool
+occupiedSquare piece =
+    case piece of
+        Nothing ->
+            False
+
+        Just (Piece _ t) ->
+            True
+
+
+occupiedByFriendly : Maybe Piece -> Team -> Bool
+occupiedByFriendly piece team =
+    case piece of
+        Nothing ->
+            False
+
+        Just (Piece _ t) ->
+            t == team
 
 
 all : List Position
