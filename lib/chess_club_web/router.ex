@@ -31,6 +31,8 @@ defmodule ChessClubWeb.Router do
       schema: ChessClubWeb.Schema,
       interface: :playground,
       context: %{pubsub: ChessClubWeb.Endpoint}
+
+    forward "/graphql", Absinthe.Plug, schema: ChessClubWeb.Schema
   end
 
   # Other scopes may use custom stacks.

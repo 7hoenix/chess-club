@@ -10,7 +10,7 @@ defmodule ChessClubWeb.Schema do
 
   query do
     @desc "Get all scenarios"
-    field :all_scenarios, non_null(list_of(non_null(:scenario))) do
+    field :scenarios, non_null(list_of(non_null(:scenario))) do
       resolve(&ScenarioResolver.all/3)
     end
   end

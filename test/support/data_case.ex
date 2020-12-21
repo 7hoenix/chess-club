@@ -18,12 +18,13 @@ defmodule ChessClub.DataCase do
 
   using do
     quote do
+      alias ChessClub.Factory
       alias ChessClub.Repo
 
+      import ChessClub.DataCase
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import ChessClub.DataCase
     end
   end
 

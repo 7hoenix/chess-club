@@ -10,7 +10,8 @@ config :chess_club, ChessClub.Repo,
   password: "postgres",
   database: "chess_club_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  ssl: false
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
