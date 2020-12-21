@@ -24,6 +24,15 @@ defmodule ChessClubWeb.Router do
     get "/", VersionController, :index
   end
 
+  scope "/api" do
+    pipe_through :api
+
+    forward "/graphical", Absinthe.Plug.GraphiQL,
+      schema: ChessClubWeb.Schema,
+      interface: :playground,
+      context: %{pubsub: ChessClubWeb.Endpoint}
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", ChessClubWeb do
   #   pipe_through :api
