@@ -1,9 +1,10 @@
 # ChessClub
 
-NOTE:
-Project bootstrapped with this approach: https://blog.ispirata.com/get-started-with-elm-0-19-and-phoenix-1-4-291beebb350b
+---------------------------------------------------------------------------------------
 
-# Usage
+## Usage
+
+---------------------------------------------------------------------------------------
 
 ```bash
 mix phx.server
@@ -33,10 +34,11 @@ Edit inventory file with actual nodes.
 OR use the commands:
 
 ```bash
-pushd assets
-npm run deploy
-popd
+rm -rf priv/static
+mkdir -p priv/static
+npm run deploy --prefix assets
 
+mix phx.digest.clean
 mix phx.digest
 MIX_ENV=prod mix docker.build prod
 MIX_ENV=prod mix ansible.playbook deploy
@@ -59,7 +61,23 @@ terraform apply
 MIX_ENV=prod mix ansible.playbook setup
 ```
 
-BEGIN GENERATED
+---------------------------------------------------------------------------------------
+
+## Inspirations
+
+---------------------------------------------------------------------------------------
+
+Want to understand how this project was built?
+
+- Project bootstrapped with this approach: https://blog.ispirata.com/get-started-with-elm-0-19-and-phoenix-1-4-291beebb350b
+- Elm structure is based on this project: https://github.com/elm/package.elm-lang.org/tree/master/src/frontend
+- Elm uses Elm Program Test so that tests are testing bevavior: https://github.com/avh4/elm-program-test#basic-example
+
+---------------------------------------------------------------------------------------
+
+## BEGIN GENERATED
+
+---------------------------------------------------------------------------------------
 
 To start your Phoenix server:
 
@@ -80,4 +98,8 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
 
+---------------------------------------------------------------------------------------
+
 END GENERATED
+
+---------------------------------------------------------------------------------------
