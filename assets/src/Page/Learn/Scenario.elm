@@ -5,7 +5,7 @@ module Page.Learn.Scenario exposing
 
 import Api.Object
 import Api.Object.Scenario exposing (id, startingState)
-import Api.Query as Query exposing (scenarios)
+import Api.Query exposing (scenarios)
 import Api.ScalarCodecs exposing (Id)
 import Graphql.Http
 import Graphql.Operation exposing (RootQuery)
@@ -27,10 +27,6 @@ query =
     scenarios scenarioSelection
 
 
-
---|> SelectionSet.list
-
-
 scenarioSelection : SelectionSet Scenario Api.Object.Scenario
 scenarioSelection =
     SelectionSet.map2 Scenario
@@ -38,8 +34,8 @@ scenarioSelection =
         id
 
 
-getScenarios : (Result (Graphql.Http.Error (List Scenario)) (List Scenario) -> msg) -> Cmd msg
-getScenarios msg =
+getScenarios : String -> (Result (Graphql.Http.Error (List Scenario)) (List Scenario) -> msg) -> Cmd msg
+getScenarios backendEndpoint msg =
     query
-        |> Graphql.Http.queryRequest "http://localhost:4000/api/graphql"
+        |> Graphql.Http.queryRequest (backendEndpoint ++ "/api/graphql")
         |> Graphql.Http.send msg

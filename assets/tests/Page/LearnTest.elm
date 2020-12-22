@@ -1,5 +1,6 @@
 module Page.LearnTest exposing (all, start)
 
+import Api.Scalar exposing (Id(..))
 import Page.Learn as Learn
 import Page.Learn.Scenario as Scenario
 import ProgramTest exposing (ProgramTest, clickButton, expectViewHas, fillIn, update)
@@ -13,7 +14,8 @@ initialStartingState =
 
 
 loadedData =
-    { scenarios = Just [ Scenario.Scenario initialStartingState ]
+    { scenarios = Just [ Scenario.Scenario initialStartingState (Id "1") ]
+    , backendEndpoint = "http://foo.bar"
     }
 
 

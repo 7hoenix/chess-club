@@ -42,7 +42,7 @@ init session =
 
         Nothing ->
             ( Model session Loading
-            , Scenario.getScenarios GotScenarios
+            , Scenario.getScenarios session.backendEndpoint GotScenarios
             )
 
 
