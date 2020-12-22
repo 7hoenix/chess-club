@@ -6,18 +6,14 @@ module Page.Learn exposing
     , view
     )
 
+import Graphql.Http
 import Html exposing (..)
-import Html.Attributes exposing (autofocus, class, href, placeholder, style, value)
-import Html.Events exposing (..)
-import Html.Keyed as Keyed
+import Html.Attributes exposing (class)
 import Html.Lazy exposing (..)
-import Http
-import Json.Decode as Decode
-import Page.Learn.Lesson as Lesson
+import Page.Learn.Scenario as Scenario
 import Page.Problem as Problem
 import Session
 import Skeleton
-import Url.Builder as Url
 
 
 
@@ -26,31 +22,27 @@ import Url.Builder as Url
 
 type alias Model =
     { session : Session.Data
-    , lessons : Lessons
+    , scenarios : Scenarios
     }
 
 
-type Lessons
+type Scenarios
     = Failure
     | Loading
-    | Success (List Lesson.Lesson)
+    | Success (List Scenario.Scenario)
 
 
 init : Session.Data -> ( Model, Cmd Msg )
 init session =
-    case Session.getLessons session of
+    case Session.getScenarios session of
         Just entries ->
             ( Model session (Success entries)
             , Cmd.none
             )
 
         Nothing ->
-            ( Model session (Success [])
-              --( Model session Loading
-            , Cmd.none
-              -- TODO
-              --, Http.send GotLessons <|
-              --    Http.get "/lessons.json" (Decode.list Lesson.decoder)
+            ( Model session Loading
+            , Scenario.getScenarios GotScenarios
             )
 
 
@@ -59,23 +51,23 @@ init session =
 
 
 type Msg
-    = GotLessons (Result Http.Error (List Lesson.Lesson))
+    = GotScenarios (Result (Graphql.Http.Error (List Scenario.Scenario)) (List Scenario.Scenario))
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
-        GotLessons result ->
+        GotScenarios result ->
             case result of
                 Err _ ->
-                    ( { model | lessons = Failure }
+                    ( { model | scenarios = Failure }
                     , Cmd.none
                     )
 
-                Ok lessons ->
+                Ok scenarios ->
                     ( { model
-                        | lessons = Success lessons
-                        , session = Session.addLessons lessons model.session
+                        | scenarios = Success scenarios
+                        , session = Session.addScenarios scenarios model.session
                       }
                     , Cmd.none
                     )
@@ -92,7 +84,7 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ lazy viewLearn model.lessons
+        [ lazy viewLearn model.scenarios
         ]
     }
 
@@ -101,36 +93,35 @@ view model =
 -- VIEW LEARN
 
 
-viewLearn : Lessons -> Html Msg
-viewLearn lessons =
+viewLearn : Scenarios -> Html Msg
+viewLearn scenarios =
     div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4" ]
-        [ case lessons of
+        [ case scenarios of
             Failure ->
-                div Problem.styles (Problem.offline "lessons.json")
+                div Problem.styles (Problem.offline "scenarios.json")
 
             Loading ->
                 text ""
 
-            -- TODO
-            -- TODO handle multiple lessons.
-            Success (lesson :: _) ->
+            -- TODO handle multiple scenarios.
+            Success (scenario :: _) ->
                 div []
-                    [ viewLesson lesson
+                    [ viewScenario scenario
                     ]
 
             Success _ ->
                 div [ class "flex-shrink-0 text-xl font-medium text-purple-600" ]
-                    [ text "You don't seem to have any lessons." ]
+                    [ text "You don't seem to have any scenarios." ]
         ]
 
 
 
--- VIEW LESSON
+-- VIEW SCENARIO
 
 
-viewLesson : Lesson.Lesson -> Html msg
-viewLesson lesson =
+viewScenario : Scenario.Scenario -> Html msg
+viewScenario scenario =
     div []
-        [ h3 [] [ text "Lesson Title" ]
-        , p [] [ text lesson.title ]
+        [ h3 [] [ text "Scenario Starting state" ]
+        , p [] [ text scenario.startingState ]
         ]
