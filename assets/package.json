@@ -7,8 +7,9 @@
     "deploy": "npm run build-tw && NODE_ENV=production webpack --mode production",
     "watch": "webpack --mode development --watch",
     "api": "elm-graphql http://localhost:4000/api/graphql",
-    "cypress:open": "cypress open",
-    "elm": "elm"
+    "cypress": "cypress",
+    "elm": "elm",
+    "elm-test": "elm-test"
   },
   "dependencies": {
     "phoenix": "file:../deps/phoenix",
@@ -24,11 +25,13 @@
     "css-loader": "^3.4.2",
     "cypress": "^6.2.0",
     "elm-live": "^4.0.2",
+    "elm-test": "^0.19.1-revision4",
     "elm-webpack-loader": "^7.0.1",
     "hard-source-webpack-plugin": "^0.13.1",
     "mini-css-extract-plugin": "^0.9.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "postcss": "^8.2.1",
+    "postcss-cli": "^8.3.1",
     "postcss-elm-tailwind": "^0.10.0",
     "postcss-import": "^14.0.0",
     "postcss-loader": "^4.1.0",
