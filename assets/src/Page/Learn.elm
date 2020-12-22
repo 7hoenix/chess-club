@@ -123,5 +123,5 @@ viewScenario : Scenario.Scenario -> Html msg
 viewScenario scenario =
     div []
         [ h3 [] [ text "Scenario Starting state" ]
-        , p [] [ text scenario.startingState ]
+        , p [ class "starting-state" ] [ text scenario.startingState ]
         ]
