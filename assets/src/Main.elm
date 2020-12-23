@@ -17,9 +17,15 @@ import Url.Parser as Parser exposing ((</>), Parser, custom, fragment, map, oneO
 
 main =
     Browser.application
-        { init = init
+        { init =
+            \flags url navKey ->
+                init flags url navKey
+                    |> Tuple.mapSecond perform
         , view = view
-        , update = update
+        , update =
+            \msg model ->
+                update msg model
+                    |> Tuple.mapSecond perform
         , subscriptions = subscriptions
         , onUrlRequest = LinkClicked
         , onUrlChange = UrlChanged
@@ -40,6 +46,29 @@ type alias Model =
 type Page
     = NotFound Session.Data
     | Learn Learn.Model
+
+
+type Effect
+    = NoEffect
+    | CmdEffect (Cmd Msg)
+    | LearnEffect Learn.Effect
+
+
+
+-- EFFECTS
+
+
+perform : Effect -> Cmd Msg
+perform effect =
+    case effect of
+        NoEffect ->
+            Cmd.none
+
+        CmdEffect cmd ->
+            cmd
+
+        LearnEffect learn ->
+            Cmd.map LearnMsg <| Learn.perform learn
 
 
 
@@ -79,7 +108,7 @@ type alias Flags =
     { backendEndpoint : String }
 
 
-init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Effect )
 init { backendEndpoint } url key =
     stepUrl url
         { key = key
@@ -98,19 +127,19 @@ type Msg
     | LearnMsg Learn.Msg
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect )
 update message model =
     case message of
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , Nav.pushUrl model.key (Url.toString url)
+                    , CmdEffect <| Nav.pushUrl model.key (Url.toString url)
                     )
 
                 Browser.External href ->
                     ( model
-                    , Nav.load href
+                    , CmdEffect <| Nav.load href
                     )
 
         UrlChanged url ->
@@ -119,16 +148,16 @@ update message model =
         LearnMsg msg ->
             case model.page of
                 Learn learn ->
-                    stepLearn model (Learn.update msg learn)
+                    stepLearn model (Learn.update msg learn |> Tuple.mapSecond LearnEffect)
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, NoEffect )
 
 
-stepLearn : Model -> ( Learn.Model, Cmd Learn.Msg ) -> ( Model, Cmd Msg )
-stepLearn model ( learn, cmds ) =
+stepLearn : Model -> ( Learn.Model, Effect ) -> ( Model, Effect )
+stepLearn model ( learn, effect ) =
     ( { model | page = Learn learn }
-    , Cmd.map LearnMsg cmds
+    , effect
     )
 
 
@@ -150,7 +179,7 @@ exit model =
 -- ROUTER
 
 
-stepUrl : Url.Url -> Model -> ( Model, Cmd Msg )
+stepUrl : Url.Url -> Model -> ( Model, Effect )
 stepUrl url model =
     let
         session =
@@ -159,7 +188,7 @@ stepUrl url model =
         parser =
             oneOf
                 [ route top
-                    (stepLearn model (Learn.init session))
+                    (stepLearn model (Learn.init session |> Tuple.mapSecond LearnEffect))
                 ]
     in
     case Parser.parse parser url of
@@ -168,7 +197,7 @@ stepUrl url model =
 
         Nothing ->
             ( { model | page = NotFound session }
-            , Cmd.none
+            , NoEffect
             )
 
 

@@ -1,14 +1,20 @@
-module Chess.Game exposing (Piece(..), Position(..), Square(..), Team(..), a1, a2, a3, a4, a5, a6, a7, a8, all, b1, b2, b3, b4, b5, b6, b7, b8, c1, c2, c3, c4, c5, c6, c7, c8, canMoveTo, d1, d2, d3, d4, d5, d6, d7, d8, e1, e2, e3, e4, e5, e6, e7, e8, f1, f2, f3, f4, f5, f6, f7, f8, g1, g2, g3, g4, g5, g6, g7, g8, h1, h2, h3, h4, h5, h6, h7, h8, init)
+module Chess.Game exposing (Game, Piece(..), PieceKind(..), Position(..), Square(..), Team(..), a1, a2, a3, a4, a5, a6, a7, a8, all, b1, b2, b3, b4, b5, b6, b7, b8, c1, c2, c3, c4, c5, c6, c7, c8, d1, d2, d3, d4, d5, d6, d7, d8, e1, e2, e3, e4, e5, e6, e7, e8, f1, f2, f3, f4, f5, f6, f7, f8, g1, g2, g3, g4, g5, g6, g7, g8, h1, h2, h3, h4, h5, h6, h7, h8, init, positionToSquareKey, put)
 
 import Dict exposing (Dict)
 
 
 type Team
     = Black
+    | White
+
+
+type PieceKind
+    = Monarch
+    | Pawn
 
 
 type Piece
-    = Monarch Team
+    = Piece PieceKind Team
 
 
 type Position
@@ -39,92 +45,17 @@ positionToSquareKey (Position column row) =
     ( column, row )
 
 
-asht (Occupied position piece) b =
-    Dict.insert (positionToSquareKey position) piece b
+put : Piece -> Position -> Game -> Game
+put piece position game =
+    { game
+        | occupiedSquares =
+            Dict.insert (positionToSquareKey position) piece game.occupiedSquares
+    }
 
 
-init : List Square -> Team -> Game
-init squares turn =
-    Game (List.foldl asht Dict.empty squares) turn
-
-
-pieceCanMoveTo : Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Bool
-pieceCanMoveTo moveTo occupiedSquares occupied =
-    case Dict.get occupied occupiedSquares of
-        Nothing ->
-            Debug.todo "impossible given the inkoking code"
-
-        Just (Monarch _) ->
-            monarchCanMoveTo moveTo occupiedSquares occupied
-
-
-canMoveTo : Position -> Game -> List Position
-canMoveTo moveTo { occupiedSquares, turn } =
-    let
-        allOccupied =
-            Dict.keys occupiedSquares
-    in
-    List.filter (pieceCanMoveTo moveTo occupiedSquares) allOccupied
-        |> List.map (\( x, y ) -> Position x y)
-
-
-monarchCanMoveTo : Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Bool
-monarchCanMoveTo moveTo occupiedSquares occupied =
-    List.any (\fn -> fn moveTo occupiedSquares occupied)
-        (horizontalMovement ++ diagonalMovement)
-
-
-horizontalMovement =
-    [ left
-    , right
-    , up
-    , down
-    ]
-
-
-diagonalMovement =
-    [ upAndToLeft
-    , upAndToRight
-    , downAndToLeft
-    , downAndToRight
-    ]
-
-
-left =
-    moveOne -1 0
-
-
-right =
-    moveOne 1 0
-
-
-up =
-    moveOne 0 1
-
-
-down =
-    moveOne 0 -1
-
-
-upAndToLeft =
-    moveOne 1 -1
-
-
-upAndToRight =
-    moveOne 1 1
-
-
-downAndToLeft =
-    moveOne -1 -1
-
-
-downAndToRight =
-    moveOne -1 1
-
-
-moveOne : Int -> Int -> Position -> Dict ( Int, Int ) Piece -> ( Int, Int ) -> Bool
-moveOne columnDelta rowDeltay (Position col row) occupiedSquares ( currentColumn, currentRow ) =
-    ( columnDelta + currentColumn, rowDeltay + currentRow ) == ( col, row )
+init : Team -> Game
+init turn =
+    Game Dict.empty turn
 
 
 all : List Position

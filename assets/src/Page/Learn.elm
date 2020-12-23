@@ -1,7 +1,9 @@
 module Page.Learn exposing
-    ( Model
+    ( Effect(..)
+    , Model
     , Msg
     , init
+    , perform
     , update
     , view
     )
@@ -32,18 +34,37 @@ type Scenarios
     | Success (List Scenario.Scenario)
 
 
-init : Session.Data -> ( Model, Cmd Msg )
+type Effect
+    = NoEffect
+    | GetScenarios Session.Data
+
+
+init : Session.Data -> ( Model, Effect )
 init session =
     case Session.getScenarios session of
         Just entries ->
             ( Model session (Success entries)
-            , Cmd.none
+            , NoEffect
             )
 
         Nothing ->
             ( Model session Loading
-            , Scenario.getScenarios session.backendEndpoint GotScenarios
+            , GetScenarios session
             )
+
+
+
+-- EFFECTS
+
+
+perform : Effect -> Cmd Msg
+perform effect =
+    case effect of
+        NoEffect ->
+            Cmd.none
+
+        GetScenarios session ->
+            Scenario.getScenarios session.backendEndpoint GotScenarios
 
 
 
@@ -54,14 +75,14 @@ type Msg
     = GotScenarios (Result (Graphql.Http.Error (List Scenario.Scenario)) (List Scenario.Scenario))
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Effect )
 update msg model =
     case msg of
         GotScenarios result ->
             case result of
                 Err _ ->
                     ( { model | scenarios = Failure }
-                    , Cmd.none
+                    , NoEffect
                     )
 
                 Ok scenarios ->
@@ -69,7 +90,7 @@ update msg model =
                         | scenarios = Success scenarios
                         , session = Session.addScenarios scenarios model.session
                       }
-                    , Cmd.none
+                    , NoEffect
                     )
 
 
