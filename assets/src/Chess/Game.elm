@@ -1,6 +1,10 @@
-module Chess.Game exposing (Game, Piece(..), PieceKind(..), Position(..), Square(..), Team(..), a1, a2, a3, a4, a5, a6, a7, a8, all, b1, b2, b3, b4, b5, b6, b7, b8, c1, c2, c3, c4, c5, c6, c7, c8, d1, d2, d3, d4, d5, d6, d7, d8, e1, e2, e3, e4, e5, e6, e7, e8, f1, f2, f3, f4, f5, f6, f7, f8, g1, g2, g3, g4, g5, g6, g7, g8, h1, h2, h3, h4, h5, h6, h7, h8, init, positionToSquareKey, put)
+module Chess.Game exposing (Config, Fen(..), Game, Piece(..), PieceKind(..), Position(..), Square(..), Team(..), a1, a2, a3, a4, a5, a6, a7, a8, all, b1, b2, b3, b4, b5, b6, b7, b8, c1, c2, c3, c4, c5, c6, c7, c8, d1, d2, d3, d4, d5, d6, d7, d8, e1, e2, e3, e4, e5, e6, e7, e8, f1, f2, f3, f4, f5, f6, f7, f8, g1, g2, g3, g4, g5, g6, g7, g8, h1, h2, h3, h4, h5, h6, h7, h8, init, positionToSquareKey, put, starterConfig, toFen)
 
 import Dict exposing (Dict)
+
+
+type Fen
+    = Fen String
 
 
 type Team
@@ -10,6 +14,10 @@ type Team
 
 type PieceKind
     = Monarch
+    | Hand
+    | Rook
+    | Knight
+    | Bishop
     | Pawn
 
 
@@ -27,16 +35,23 @@ type Square
 
 type alias Game =
     { occupiedSquares : Dict ( Int, Int ) Piece
-    , turn : Team
+    , config : Config
+    }
+
+
+type alias Config =
+    { turn : Team
+
+    -- NOTE: These are only strings because starting with the endgame means
+    -- that we won't be using many for a while and therefore we are just choosing to ignore them.
+    , castlingOptions : String
+    , enPassant : String
+    , halfmoveClock : Int
+    , fullmoveClock : Int
     }
 
 
 
---            team = Chess.Black
---            monarch = Chess.Monarch team
---            squareFrom = Chess.Square Chess.A1 monarch
---            squareTo = Chess.Square Chess.A2 Nothing
---            game = Chess.init [square]
 -- Square accessor functions
 
 
@@ -53,9 +68,120 @@ put piece position game =
     }
 
 
-init : Team -> Game
-init turn =
-    Game Dict.empty turn
+starterConfig : Config
+starterConfig =
+    Config Black "-" "-" 0 77
+
+
+init : Config -> Game
+init config =
+    Game Dict.empty config
+
+
+
+-- FEN Serialization
+
+
+toFen : Game -> Fen
+toFen game =
+    List.map (\i -> collectFenRow i (Dict.toList game.occupiedSquares)) (List.reverse (List.range 1 8))
+        |> String.join "/"
+        |> withConfig game
+        |> Fen
+
+
+withConfig : Game -> String -> String
+withConfig { config } board =
+    String.join " "
+        [ board
+        , teamToValue config.turn
+        , config.castlingOptions
+        , config.enPassant
+        , String.fromInt config.halfmoveClock
+        , String.fromInt config.fullmoveClock
+        ]
+
+
+collectFenRow : Int -> List ( ( Int, Int ), Piece ) -> String
+collectFenRow row occupiedSquares =
+    let
+        squaresInRow =
+            List.filter (\( ( _, r ), _ ) -> r == row) occupiedSquares
+    in
+    toFenRowHelp squaresInRow "" 8 Nothing
+
+
+teamToValue : Team -> String
+teamToValue team =
+    case team of
+        Black ->
+            "b"
+
+        White ->
+            "w"
+
+
+pieceToValue : Piece -> String
+pieceToValue (Piece kind team) =
+    let
+        withTeam piece =
+            case team of
+                Black ->
+                    piece
+
+                White ->
+                    String.toUpper piece
+    in
+    case kind of
+        Monarch ->
+            withTeam "k"
+
+        Hand ->
+            withTeam "q"
+
+        Rook ->
+            withTeam "r"
+
+        Knight ->
+            withTeam "n"
+
+        Bishop ->
+            withTeam "b"
+
+        Pawn ->
+            withTeam "p"
+
+
+toFenRowHelp : List ( ( Int, Int ), Piece ) -> String -> Int -> Maybe Int -> String
+toFenRowHelp squaresInRow row countRemainingInRow maybePrev =
+    let
+        removeZeros val =
+            if val == 0 then
+                ""
+
+            else
+                String.fromInt val
+    in
+    case squaresInRow of
+        [] ->
+            row ++ removeZeros countRemainingInRow
+
+        ( ( column, _ ), piece ) :: remaining ->
+            let
+                offset =
+                    case maybePrev of
+                        Nothing ->
+                            -- If first piece looked at in the row.
+                            column
+
+                        Just prev ->
+                            -- Already looked at one before.
+                            column - prev
+
+                accumulatorWithNextPieceWithSpacingIfThere =
+                    row ++ removeZeros (offset - 1) ++ pieceToValue piece
+            in
+            toFenRowHelp remaining accumulatorWithNextPieceWithSpacingIfThere (countRemainingInRow - offset) (Just column)
 
 
 all : List Position

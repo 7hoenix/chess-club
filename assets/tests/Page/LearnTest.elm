@@ -63,14 +63,14 @@ all =
     describe "Learn page"
         [ test "shows trivial" <|
             \() ->
-                start (Chess.init Chess.Black)
+                start (Chess.init Chess.starterConfig)
                     |> expectViewHas [ text initialStartingState ]
         , test "displays all valid moves for your piece" <|
             \() ->
                 let
                     -- White pawn and monarch may both move to the same square g5.
                     game =
-                        Chess.init Chess.Black
+                        Chess.init Chess.starterConfig
                             |> Chess.put blackMonarch Chess.g8
                             |> Chess.put whiteMonarch Chess.g6
                             |> Chess.put whitePawn Chess.g4
