@@ -17,5 +17,7 @@ import "phoenix_html"
 import { Elm } from "../src/Main.elm";
 
 var app = Elm.Main.init({
-  node: document.getElementById('elm-main')
+  flags: {
+    backendEndpoint: document.querySelector('body').dataset.backendEndpoint
+  }
 });

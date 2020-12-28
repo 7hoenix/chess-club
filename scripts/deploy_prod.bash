@@ -2,6 +2,9 @@
 
 set -e
 
+echo "Running CI"
+./scripts/ci.bash
+
 rm -rf priv/static
 mkdir -p priv/static
 npm run deploy --prefix assets

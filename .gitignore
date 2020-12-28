@@ -27,6 +27,8 @@ npm-debug.log
 
 # The directory NPM downloads your dependencies sources to.
 /assets/node_modules/
+/assets/src/Api/
+/assets/cypress/videos/
 
 elm-stuff
 
@@ -48,3 +50,4 @@ secret.auto.tfvars
 
 # This is only here because we have not figured out how to pass variables to ansible
 rel/ansible/inventory/main.yml
+

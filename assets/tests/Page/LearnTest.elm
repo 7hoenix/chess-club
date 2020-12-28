@@ -1,21 +1,28 @@
-module Page.LearnTest exposing (all, emptyData, start)
+module Page.LearnTest exposing (all, start)
 
+import Api.Scalar exposing (Id(..))
 import Page.Learn as Learn
+import Page.Learn.Scenario as Scenario
 import ProgramTest exposing (ProgramTest, clickButton, expectViewHas, fillIn, update)
 import Skeleton
 import Test exposing (..)
 import Test.Html.Selector exposing (text)
 
 
-emptyData =
-    { lessons = Nothing
+initialStartingState =
+    "some-fen-string"
+
+
+loadedData =
+    { scenarios = Just [ Scenario.Scenario initialStartingState (Id "1") ]
+    , backendEndpoint = "http://foo.bar"
     }
 
 
 start : ProgramTest Learn.Model Learn.Msg (Cmd Learn.Msg)
 start =
     ProgramTest.createDocument
-        { init = \_ -> Learn.init emptyData
+        { init = \_ -> Learn.init loadedData
         , view = \model -> Skeleton.view (\msg -> msg) (Learn.view model)
         , update = Learn.update
         }
@@ -28,5 +35,5 @@ all =
         [ test "shows trivial" <|
             \() ->
                 start
-                    |> expectViewHas [ text "You don't seem to have any lessons." ]
+                    |> expectViewHas [ text initialStartingState ]
         ]

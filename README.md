@@ -10,22 +10,28 @@
 mix phx.server
 ```
 
+To run all tests: Elm, Elixir, and Cypress:
+
+```bash
+./scripts/ci.bash
+```
+
 Install an elm dependency:
 
 ```bash
-pushd assets
-npm run elm install mdgriffith/elm-ui
-popd
+npm run elm install mdgriffith/elm-ui --prefix assets
 ```
 
 Deployment.
 
-First time setup
+First time setup:
 
 ```bash
 cp rel/ansible/inventory/main.yml{.example,}
 ```
 Edit inventory file with actual nodes.
+
+Use the script as it runs ci first.
 
 ```bash
 ./scripts/deploy_prod.bash
@@ -46,7 +52,9 @@ MIX_ENV=prod mix ansible.playbook deploy
 
 Migrating the database
 
-SSH into the host and then run:
+SSH into the host:
+- edit `/opt/chess_club/chess_club.env` to be able to source variables
+- and then run:
 
 ```bash
 /opt/chess_club/bin/prod eval "ChessClub.Release.migrate"

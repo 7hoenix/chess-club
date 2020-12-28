@@ -33,6 +33,7 @@ main =
 type alias Model =
     { key : Nav.Key
     , page : Page
+    , backendEndpoint : String
     }
 
 
@@ -74,11 +75,16 @@ view model =
 -- INIT
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
+type alias Flags =
+    { backendEndpoint : String }
+
+
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init { backendEndpoint } url key =
     stepUrl url
         { key = key
-        , page = NotFound Session.empty
+        , page = NotFound <| Session.empty backendEndpoint
+        , backendEndpoint = backendEndpoint
         }
 
 

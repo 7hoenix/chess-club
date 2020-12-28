@@ -24,6 +24,7 @@ defmodule ChessClubWeb.ConnCase do
       import Phoenix.ConnTest
       import ChessClubWeb.ConnCase
 
+      alias ChessClub.Factory
       alias ChessClubWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing

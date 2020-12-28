@@ -1,11 +1,11 @@
 module Session exposing
     ( Data
-    , addLessons
+    , addScenarios
     , empty
-    , getLessons
+    , getScenarios
     )
 
-import Page.Learn.Lesson as Lesson
+import Page.Learn.Scenario as Scenario
 
 
 
@@ -13,24 +13,25 @@ import Page.Learn.Lesson as Lesson
 
 
 type alias Data =
-    { lessons : Maybe (List Lesson.Lesson)
+    { scenarios : Maybe (List Scenario.Scenario)
+    , backendEndpoint : String
     }
 
 
-empty : Data
-empty =
-    Data Nothing
+empty : String -> Data
+empty backendEndpoint =
+    Data Nothing backendEndpoint
 
 
 
--- LESSONS
+-- SCENARIOS
 
 
-getLessons : Data -> Maybe (List Lesson.Lesson)
-getLessons data =
-    data.lessons
+getScenarios : Data -> Maybe (List Scenario.Scenario)
+getScenarios data =
+    data.scenarios
 
 
-addLessons : List Lesson.Lesson -> Data -> Data
-addLessons lessons data =
-    { data | lessons = Just lessons }
+addScenarios : List Scenario.Scenario -> Data -> Data
+addScenarios scenarios data =
+    { data | scenarios = Just scenarios }
