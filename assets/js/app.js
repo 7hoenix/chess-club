@@ -21,8 +21,9 @@ import { Elm } from "../src/Main.elm";
 let notifiers = [];
 
 document.addEventListener("DOMContentLoaded", function() {
+  const socketUrl = document.querySelector('body').dataset.socketEndpoint
   const absintheSocket = AbsintheSocket.create(
-    new PhoenixSocket("ws://localhost:4000/socket")
+    new PhoenixSocket(socketUrl + "/socket")
   );
 
   const app = Elm.Main.init({
