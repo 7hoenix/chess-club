@@ -12,6 +12,7 @@
     "elm-test": "elm-test"
   },
   "dependencies": {
+    "@absinthe/socket": "^0.2.1",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html"
   },

@@ -1,5 +1,6 @@
 defmodule ChessClubWeb.UserSocket do
   use Phoenix.Socket
+  use Absinthe.Phoenix.Socket, schema: ChessClubWeb.Schema
 
   ## Channels
   # channel "room:*", ChessClubWeb.RoomChannel

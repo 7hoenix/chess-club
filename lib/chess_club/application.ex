@@ -14,7 +14,8 @@ defmodule ChessClub.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: ChessClub.PubSub},
       # Start the Endpoint (http/https)
-      ChessClubWeb.Endpoint
+      ChessClubWeb.Endpoint,
+      {Absinthe.Subscription, ChessClubWeb.Endpoint}
       # Start a worker by calling: ChessClub.Worker.start_link(arg)
       # {ChessClub.Worker, arg}
     ]
