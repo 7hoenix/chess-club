@@ -7,20 +7,19 @@ module Page.Learn exposing
     , view
     )
 
-import Api.Object exposing (Move)
-import Api.Object.Move
 import Api.Scalar exposing (Id)
 import Api.Subscription as Subscription
 import Graphql.Document
 import Graphql.Http
 import Graphql.Operation exposing (RootSubscription)
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
+import Graphql.SelectionSet exposing (SelectionSet)
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
 import Js
 import Json.Decode
-import Page.Learn.Scenario as Scenario
+import Page.Learn.Scenario as Scenario exposing (moveSelection)
 import Page.Problem as Problem
 import Session
 import Skeleton
@@ -34,6 +33,7 @@ type alias Model =
     { session : Session.Data
     , scenarios : Scenarios
     , subscriptionStatus : SubsscriptionStatus
+    , recentMove : Maybe Scenario.Move
     }
 
 
@@ -52,12 +52,12 @@ init : Session.Data -> ( Model, Cmd Msg )
 init session =
     case Session.getScenarios session of
         Just entries ->
-            ( Model session (Success entries) NotConnected
+            ( Model session (Success entries) NotConnected Nothing
             , Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
             )
 
         Nothing ->
-            ( Model session Loading NotConnected
+            ( Model session Loading NotConnected Nothing
             , Cmd.batch
                 [ Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
                 , Scenario.getScenarios session.backendEndpoint GotScenarios
@@ -65,22 +65,9 @@ init session =
             )
 
 
-subscriptionDocument : SelectionSet Move RootSubscription
+subscriptionDocument : SelectionSet Scenario.Move RootSubscription
 subscriptionDocument =
     Subscription.moveMade { scenarioId = Api.Scalar.Id "1" } moveSelection
-
-
-type alias Move =
-    { squareFrom : String
-    , squareTo : String
-    }
-
-
-moveSelection : SelectionSet Move Api.Object.Move
-moveSelection =
-    SelectionSet.succeed Move
-        |> with Api.Object.Move.squareFrom
-        |> with Api.Object.Move.squareTo
 
 
 
@@ -91,9 +78,11 @@ type Msg
     = GotScenarios (Result (Graphql.Http.Error (List Scenario.Scenario)) (List Scenario.Scenario))
     | SubscriptionDataReceived Json.Decode.Value
     | NewSubscriptionStatus SubsscriptionStatus ()
+    | MakeMove String String
+    | SentMove (Result (Graphql.Http.Error ()) ())
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotScenarios result ->
@@ -114,13 +103,21 @@ update msg model =
         SubscriptionDataReceived newData ->
             case Json.Decode.decodeValue (subscriptionDocument |> Graphql.Document.decoder) newData of
                 Ok newMove ->
-                    ( model, Cmd.none )
+                    ( { model | recentMove = Just newMove }, Cmd.none )
 
                 Err error ->
                     ( model, Cmd.none )
 
         NewSubscriptionStatus status () ->
             ( { model | subscriptionStatus = status }, Cmd.none )
+
+        MakeMove from to ->
+            ( model
+            , Scenario.makeMove model.session.backendEndpoint from to SentMove
+            )
+
+        SentMove _ ->
+            ( model, Cmd.none )
 
 
 
@@ -135,9 +132,26 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ viewConnection model.subscriptionStatus
+        , lazy viewRecentMove model.recentMove
         , lazy viewLearn model.scenarios
         ]
     }
+
+
+viewRecentMove : Maybe Scenario.Move -> Html Msg
+viewRecentMove move =
+    div [ class "container flex flex-col mx-auto px-4" ]
+        [ button [ onClick (MakeMove "a1" "a2"), class "bg-green-500" ] [ text "Move a1a2" ]
+        , button [ onClick (MakeMove "a2" "a1"), class "bg-red-500" ] [ text "Move a2a1" ]
+        , div [ class "container" ]
+            [ case move of
+                Nothing ->
+                    text "No recent move here"
+
+                Just m ->
+                    text <| m.squareFrom ++ m.squareTo
+            ]
+        ]
 
 
 viewConnection : SubsscriptionStatus -> Html Msg
