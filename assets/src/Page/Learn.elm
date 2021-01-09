@@ -32,12 +32,12 @@ import Skeleton
 type alias Model =
     { session : Session.Data
     , scenarios : Scenarios
-    , subscriptionStatus : SubsscriptionStatus
+    , subscriptionStatus : SubscriptionStatus
     , recentMove : Maybe Scenario.Move
     }
 
 
-type SubsscriptionStatus
+type SubscriptionStatus
     = Connected
     | NotConnected
 
@@ -76,10 +76,10 @@ subscriptionDocument =
 
 type Msg
     = GotScenarios (Result (Graphql.Http.Error (List Scenario.Scenario)) (List Scenario.Scenario))
-    | SubscriptionDataReceived Json.Decode.Value
-    | NewSubscriptionStatus SubsscriptionStatus ()
     | MakeMove String String
+    | NewSubscriptionStatus SubscriptionStatus ()
     | SentMove (Result (Graphql.Http.Error ()) ())
+    | SubscriptionDataReceived Json.Decode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -100,6 +100,17 @@ update msg model =
                     , Cmd.none
                     )
 
+        MakeMove from to ->
+            ( model
+            , Scenario.makeMove model.session.backendEndpoint from to SentMove
+            )
+
+        NewSubscriptionStatus status () ->
+            ( { model | subscriptionStatus = status }, Cmd.none )
+
+        SentMove _ ->
+            ( model, Cmd.none )
+
         SubscriptionDataReceived newData ->
             case Json.Decode.decodeValue (subscriptionDocument |> Graphql.Document.decoder) newData of
                 Ok newMove ->
@@ -107,17 +118,6 @@ update msg model =
 
                 Err error ->
                     ( model, Cmd.none )
-
-        NewSubscriptionStatus status () ->
-            ( { model | subscriptionStatus = status }, Cmd.none )
-
-        MakeMove from to ->
-            ( model
-            , Scenario.makeMove model.session.backendEndpoint from to SentMove
-            )
-
-        SentMove _ ->
-            ( model, Cmd.none )
 
 
 
@@ -154,7 +154,7 @@ viewRecentMove move =
         ]
 
 
-viewConnection : SubsscriptionStatus -> Html Msg
+viewConnection : SubscriptionStatus -> Html Msg
 viewConnection status =
     case status of
         Connected ->
