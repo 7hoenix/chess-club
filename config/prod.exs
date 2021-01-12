@@ -32,6 +32,10 @@ config :chess_club, ChessClub.Repo,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :chess_club,
+       :chess_api_url,
+       System.get_env("CHESS_API_URL_PROD")
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
