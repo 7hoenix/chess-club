@@ -7,7 +7,6 @@
 # General application configuration
 use Mix.Config
 
-
 config :chess_club, ChessClub.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "chess_club",
@@ -42,6 +41,7 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+config :chess_club, :http_client, HTTPoison
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
