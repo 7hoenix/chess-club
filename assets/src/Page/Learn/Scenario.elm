@@ -1,21 +1,22 @@
 module Page.Learn.Scenario exposing
     ( Move
     , Scenario
-    , getScenarios
+    , getScenario
     , makeMove
     , moveSelection
+    , scenarioSelection
     )
 
 import Api.Mutation as Mutation
 import Api.Object
 import Api.Object.Move
-import Api.Object.Scenario exposing (id, startingState)
-import Api.Query exposing (scenarios)
-import Api.Scalar
+import Api.Object.Scenario exposing (availableMoves, currentState, id)
+import Api.Query exposing (scenario, scenarios)
+import Api.Scalar exposing (Id(..))
 import Api.ScalarCodecs exposing (Id)
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, list, with)
 
 
 
@@ -23,26 +24,28 @@ import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 
 
 type alias Scenario =
-    { startingState : String
+    { availableMoves : List Move
+    , currentState : String
     , id : Id
     }
 
 
-query : SelectionSet (List Scenario) RootQuery
-query =
-    scenarios scenarioSelection
+query : String -> SelectionSet Scenario RootQuery
+query id =
+    (scenario <| { scenarioId = Id id }) scenarioSelection
 
 
 scenarioSelection : SelectionSet Scenario Api.Object.Scenario
 scenarioSelection =
-    SelectionSet.map2 Scenario
-        startingState
+    SelectionSet.map3 Scenario
+        (availableMoves moveSelection)
+        currentState
         id
 
 
-getScenarios : String -> (Result (Graphql.Http.Error (List Scenario)) (List Scenario) -> msg) -> Cmd msg
-getScenarios backendEndpoint msg =
-    query
+getScenario : String -> String -> (Result (Graphql.Http.Error Scenario) Scenario -> msg) -> Cmd msg
+getScenario backendEndpoint id msg =
+    query id
         |> Graphql.Http.queryRequest (backendEndpoint ++ "/api/graphql")
         |> Graphql.Http.send msg
 
@@ -52,30 +55,34 @@ getScenarios backendEndpoint msg =
 
 
 type alias Move =
-    { squareFrom : String
+    { fenAfterMove : String
+    , squareFrom : String
     , squareTo : String
+    , color : String
     }
 
 
 moveSelection : SelectionSet Move Api.Object.Move
 moveSelection =
     SelectionSet.succeed Move
+        |> with Api.Object.Move.fenAfterMove
         |> with Api.Object.Move.squareFrom
         |> with Api.Object.Move.squareTo
+        |> with Api.Object.Move.color
 
 
 
 -- This only sends as we are subscribing to the result
 
 
-sendMakeMove : String -> String -> SelectionSet () RootMutation
-sendMakeMove from to =
-    Mutation.makeMove { squareFrom = from, squareTo = to, scenarioId = Api.Scalar.Id "1" } SelectionSet.empty
+sendMakeMove : Move -> SelectionSet () RootMutation
+sendMakeMove { squareFrom, squareTo, fenAfterMove } =
+    Mutation.makeMove { squareFrom = squareFrom, squareTo = squareTo, fenAfterMove = fenAfterMove, scenarioId = Api.Scalar.Id "1" } SelectionSet.empty
         |> SelectionSet.map (\_ -> ())
 
 
-makeMove : String -> String -> String -> (Result (Graphql.Http.Error ()) () -> msg) -> Cmd msg
-makeMove backendEndpoint from to msg =
-    sendMakeMove from to
+makeMove : String -> Move -> (Result (Graphql.Http.Error ()) () -> msg) -> Cmd msg
+makeMove backendEndpoint move msg =
+    sendMakeMove move
         |> Graphql.Http.mutationRequest (backendEndpoint ++ "/api/graphql")
         |> Graphql.Http.send msg
