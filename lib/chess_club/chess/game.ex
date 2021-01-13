@@ -26,14 +26,24 @@ defmodule ChessClub.Chess.Game do
     |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
   end
 
-  defp to_move(%{"from" => from, "to" => to, "player" => color, "fenAfterMove" => fen_after_move}) do
+  defp to_move(%{
+         "from" => square_from,
+         "to" => square_to,
+         "player" => color,
+         "fenAfterMove" => fen_after_move
+       }) do
     c =
       case color do
         "WHITE" -> "w"
         "BLACK" -> "b"
       end
 
-    %Move{from: from, to: to, color: c, fen_after_move: fen_after_move}
+    %Move{
+      square_from: square_from,
+      square_to: square_to,
+      color: c,
+      fen_after_move: fen_after_move
+    }
   end
 
   defp http_client do
