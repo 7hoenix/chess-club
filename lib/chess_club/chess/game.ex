@@ -1,16 +1,14 @@
 defmodule ChessClub.Chess.Game do
-  use HTTPoison.Base
   alias ChessClub.Chess.Move
   @expected_fields ~w(
                       moves
                     )
-  @headers [{"Content-Type", "application/json"}]
 
   def available_moves(fen) do
     {:ok, request_body} = %{board: fen} |> Poison.encode()
-    moves_url = chess_api_url() <> "/moves"
-
-    {:ok, %{body: body}} = http_client().post(moves_url, request_body, @headers)
+    {:ok, py} = :python.start([{:python_path, './api'}, {:python, 'python3'}])
+    body = :python.call(py, :app, :route_moves_erlport, [request_body])
+    :python.stop(py)
 
     body
     |> extract_response()
@@ -44,13 +42,5 @@ defmodule ChessClub.Chess.Game do
       color: c,
       fen_after_move: fen_after_move
     }
-  end
-
-  defp http_client do
-    Application.get_env(:chess_club, :http_client)
-  end
-
-  defp chess_api_url do
-    Application.get_env(:chess_club, :chess_api_url)
   end
 end

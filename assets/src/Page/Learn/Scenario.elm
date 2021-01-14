@@ -11,7 +11,7 @@ import Api.Mutation as Mutation
 import Api.Object
 import Api.Object.Move
 import Api.Object.Scenario exposing (availableMoves, currentState, id)
-import Api.Query exposing (scenario, scenarios)
+import Api.Query exposing (scenario)
 import Api.Scalar exposing (Id(..))
 import Api.ScalarCodecs exposing (Id)
 import Graphql.Http

@@ -8,7 +8,7 @@ defmodule ChessClubWeb.ScenarioTest do
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
 
       query = """
-      query { scenarios { id, starting_state } }
+      query { scenario_seeds { id, starting_state } }
       """
 
       response =
@@ -17,7 +17,7 @@ defmodule ChessClubWeb.ScenarioTest do
 
       assert json_response(response, 200) == %{
                "data" => %{
-                 "scenarios" => [
+                 "scenario_seeds" => [
                    %{
                      "id" => "#{scenario.id}",
                      "starting_state" => scenario.starting_state

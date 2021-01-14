@@ -3,6 +3,11 @@ defmodule ChessClubWeb.Schema do
 
   alias ChessClubWeb.ScenarioResolver
 
+  object :scenario_seed do
+    field :id, non_null(:id)
+    field :starting_state, non_null(:string)
+  end
+
   object :scenario do
     field :id, non_null(:id)
     field :current_state, non_null(:string)
@@ -57,7 +62,7 @@ defmodule ChessClubWeb.Schema do
     end
 
     @desc "Get all scenarios"
-    field :scenarios, non_null(list_of(non_null(:scenario))) do
+    field :scenario_seeds, non_null(list_of(non_null(:scenario_seed))) do
       resolve(&ScenarioResolver.all/3)
     end
   end

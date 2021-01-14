@@ -44,6 +44,7 @@ defmodule ChessClub.MixProject do
       {:absinthe_phoenix, "~> 2.0.0"},
       {:absinthe_plug, "~> 1.5.0"},
       {:ecto_sql, "~> 3.4"},
+      {:erlport, "~> 0.10.1"},
       {:ex_machina, "~> 2.4", only: [:dev, :test]},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},

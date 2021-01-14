@@ -8,13 +8,10 @@ defmodule ChessClubWeb.ScenarioResolver do
 
   def get(_root, args, _info) do
     scenario = ChessClub.Repo.get(Scenario, args.scenario_id) |> ChessClub.Repo.preload(:moves)
-    IO.inspect(scenario, label: "---------> scenario")
 
     case List.last(scenario.moves) do
       nil ->
         available_moves = Game.available_moves(scenario.starting_state)
-        IO.inspect(available_moves, label: "---------> moves")
-        IO.inspect(args.scenario_id, label: "---------> scenario_id")
 
         {:ok,
          %{
