@@ -48,7 +48,12 @@ type Page
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model.page of
+        Learn learnModel ->
+            Sub.map LearnMsg <| Learn.subscriptions learnModel
+
+        NotFound _ ->
+            Sub.none
 
 
 

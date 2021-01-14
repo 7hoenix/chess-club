@@ -11,6 +11,6 @@ defmodule ChessClub do
 
   @spec all(schema :: Ecto.Queryable) :: [Ecto.Changeset | Ecto.ChangeError]
   def all(schema) do
-    Repo.all(schema)
+    Repo.all schema
   end
 end

@@ -1,9 +1,11 @@
 defmodule ChessClub.Learn.Scenario do
   use Ecto.Schema
   import Ecto.Changeset
+  alias ChessClub.Learn.Move
 
   schema "scenarios" do
     field :starting_state, :string
+    has_many :moves, Move
 
     timestamps()
   end

@@ -2,15 +2,24 @@ module Page.Learn exposing
     ( Model
     , Msg
     , init
+    , subscriptions
     , update
     , view
     )
 
+import Api.Scalar exposing (Id)
+import Api.Subscription as Subscription
+import Graphql.Document
 import Graphql.Http
+import Graphql.Operation exposing (RootSubscription)
+import Graphql.SelectionSet exposing (SelectionSet)
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
-import Page.Learn.Scenario as Scenario
+import Js
+import Json.Decode
+import Page.Learn.Scenario as Scenario exposing (moveSelection)
 import Page.Problem as Problem
 import Session
 import Skeleton
@@ -23,7 +32,14 @@ import Skeleton
 type alias Model =
     { session : Session.Data
     , scenarios : Scenarios
+    , subscriptionStatus : SubscriptionStatus
+    , recentMove : Maybe Scenario.Move
     }
+
+
+type SubscriptionStatus
+    = Connected
+    | NotConnected
 
 
 type Scenarios
@@ -36,14 +52,22 @@ init : Session.Data -> ( Model, Cmd Msg )
 init session =
     case Session.getScenarios session of
         Just entries ->
-            ( Model session (Success entries)
-            , Cmd.none
+            ( Model session (Success entries) NotConnected Nothing
+            , Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
             )
 
         Nothing ->
-            ( Model session Loading
-            , Scenario.getScenarios session.backendEndpoint GotScenarios
+            ( Model session Loading NotConnected Nothing
+            , Cmd.batch
+                [ Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
+                , Scenario.getScenarios session.backendEndpoint GotScenarios
+                ]
             )
+
+
+subscriptionDocument : SelectionSet Scenario.Move RootSubscription
+subscriptionDocument =
+    Subscription.moveMade { scenarioId = Api.Scalar.Id "1" } moveSelection
 
 
 
@@ -52,9 +76,13 @@ init session =
 
 type Msg
     = GotScenarios (Result (Graphql.Http.Error (List Scenario.Scenario)) (List Scenario.Scenario))
+    | MakeMove String String
+    | NewSubscriptionStatus SubscriptionStatus ()
+    | SentMove (Result (Graphql.Http.Error ()) ())
+    | SubscriptionDataReceived Json.Decode.Value
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotScenarios result ->
@@ -72,6 +100,25 @@ update msg model =
                     , Cmd.none
                     )
 
+        MakeMove from to ->
+            ( model
+            , Scenario.makeMove model.session.backendEndpoint from to SentMove
+            )
+
+        NewSubscriptionStatus status () ->
+            ( { model | subscriptionStatus = status }, Cmd.none )
+
+        SentMove _ ->
+            ( model, Cmd.none )
+
+        SubscriptionDataReceived newData ->
+            case Json.Decode.decodeValue (subscriptionDocument |> Graphql.Document.decoder) newData of
+                Ok newMove ->
+                    ( { model | recentMove = Just newMove }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
+
 
 
 -- VIEW
@@ -84,9 +131,37 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ lazy viewLearn model.scenarios
+        [ viewConnection model.subscriptionStatus
+        , lazy viewRecentMove model.recentMove
+        , lazy viewLearn model.scenarios
         ]
     }
+
+
+viewRecentMove : Maybe Scenario.Move -> Html Msg
+viewRecentMove move =
+    div [ class "container flex flex-col mx-auto px-4" ]
+        [ button [ onClick (MakeMove "a1" "a2"), class "bg-green-500" ] [ text "Move a1a2" ]
+        , button [ onClick (MakeMove "a2" "a1"), class "bg-red-500" ] [ text "Move a2a1" ]
+        , div [ class "container" ]
+            [ case move of
+                Nothing ->
+                    text "No recent move here"
+
+                Just m ->
+                    text <| m.squareFrom ++ m.squareTo
+            ]
+        ]
+
+
+viewConnection : SubscriptionStatus -> Html Msg
+viewConnection status =
+    case status of
+        Connected ->
+            div [] [ text "Connected :tada:!" ]
+
+        NotConnected ->
+            div [] [ text "It seems we can't connect :( maybe try refreshing." ]
 
 
 
@@ -124,4 +199,16 @@ viewScenario scenario =
     div []
         [ h3 [] [ text "Scenario Starting state" ]
         , p [ class "starting-state" ] [ text scenario.startingState ]
+        ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Js.gotSubscriptionData SubscriptionDataReceived
+        , Js.socketStatusConnected (NewSubscriptionStatus Connected)
         ]
