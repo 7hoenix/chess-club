@@ -8,41 +8,27 @@ defmodule ChessClubWeb.ScenarioResolver do
 
   def get(_root, args, _info) do
     scenario = ChessClub.Repo.get(Scenario, args.scenario_id) |> ChessClub.Repo.preload(:moves)
-
-    case List.last(scenario.moves) do
-      nil ->
-        available_moves = Game.available_moves(scenario.starting_state)
-
-        {:ok,
-         %{
-           current_state: scenario.starting_state,
-           available_moves: available_moves,
-           id: args.scenario_id
-         }}
-
-      move ->
-        available_moves = Game.available_moves(move.fen_after_move)
-
-        {:ok,
-         %{
-           current_state: move.fen_after_move,
-           available_moves: available_moves,
-           id: args.scenario_id
-         }}
-    end
+    resolve_scenario(scenario)
   end
 
   def make_move(_root, args, _info) do
     changeset = ChessClub.Learn.Move.changeset(%ChessClub.Learn.Move{}, args)
-    {:ok, move} = ChessClub.Repo.insert(changeset)
-    # TODO: Consider extracting this state into an enrichment service.
-    available_moves = Game.available_moves(move.fen_after_move)
+    {:ok, _} = ChessClub.Repo.insert(changeset)
+    scenario = ChessClub.Repo.get(Scenario, args.scenario_id) |> ChessClub.Repo.preload(:moves)
+    resolve_scenario(scenario)
+  end
+
+  defp resolve_scenario(scenario) do
+    move_commands = Enum.map(scenario.moves, & &1.move_command)
+
+    {available_moves, current_state} =
+      Game.available_moves(scenario.starting_state, move_commands)
 
     {:ok,
      %{
-       current_state: move.fen_after_move,
+       current_state: current_state,
        available_moves: available_moves,
-       id: args.scenario_id
+       id: scenario.id
      }}
   end
 end

@@ -59,6 +59,7 @@ type alias Move =
     , squareFrom : String
     , squareTo : String
     , color : String
+    , moveCommand : String
     }
 
 
@@ -69,6 +70,7 @@ moveSelection =
         |> with Api.Object.Move.squareFrom
         |> with Api.Object.Move.squareTo
         |> with Api.Object.Move.color
+        |> with Api.Object.Move.moveCommand
 
 
 
@@ -76,8 +78,8 @@ moveSelection =
 
 
 sendMakeMove : Move -> SelectionSet () RootMutation
-sendMakeMove { squareFrom, squareTo, fenAfterMove } =
-    Mutation.makeMove { squareFrom = squareFrom, squareTo = squareTo, fenAfterMove = fenAfterMove, scenarioId = Api.Scalar.Id "1" } SelectionSet.empty
+sendMakeMove { moveCommand } =
+    Mutation.makeMove { moveCommand = moveCommand, scenarioId = Api.Scalar.Id "1" } SelectionSet.empty
         |> SelectionSet.map (\_ -> ())
 
 

@@ -3,16 +3,20 @@ import json
 
 
 def route_moves_erlport(event):
-    return json.dumps(moves(json.loads(event)["board"]))
+    as_json = json.loads(event)
+    return json.dumps(moves(as_json["board"], as_json["moves_made"]))
 
 # MOVES
 
-def moves(board):
+def moves(board, moves_made):
     chess_board = chess.Board(board)
+    for move in moves_made:
+        chess_board.push(chess.Move.from_uci(move))
     assert chess_board.is_valid()
     return {
         "moves": possible_moves(chess_board.copy()),
         "turn": turn(chess_board),
+        "current_state": chess_board.fen(),
     }
 
 def possible_moves(chess_board):

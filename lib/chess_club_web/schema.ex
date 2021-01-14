@@ -22,15 +22,15 @@ defmodule ChessClubWeb.Schema do
     field :square_to, non_null(:string)
     @desc "The team that get's to make this move."
     field :color, non_null(:string)
+    @desc "The move command that should be sent back to the backend."
+    field :move_command, non_null(:string)
     @desc "The fen state if this move were to be made."
     field :fen_after_move, non_null(:string)
   end
 
   mutation do
     field :make_move, type: non_null(:scenario) do
-      arg(:square_from, non_null(:string))
-      arg(:square_to, non_null(:string))
-      arg(:fen_after_move, non_null(:string))
+      arg(:move_command, non_null(:string))
       arg(:scenario_id, non_null(:id))
 
       resolve(&ScenarioResolver.make_move/3)
