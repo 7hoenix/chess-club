@@ -3,11 +3,6 @@ defmodule ChessClubWeb.Schema do
 
   alias ChessClubWeb.ScenarioResolver
 
-  object :scenario_seed do
-    field :id, non_null(:id)
-    field :starting_state, non_null(:string)
-  end
-
   object :scenario do
     field :id, non_null(:id)
     field :current_state, non_null(:string)
@@ -29,6 +24,10 @@ defmodule ChessClubWeb.Schema do
   end
 
   mutation do
+    field :create_scenario, type: non_null(:scenario) do
+      resolve(&ScenarioResolver.create/3)
+    end
+
     field :make_move, type: non_null(:scenario) do
       arg(:move_command, non_null(:string))
       arg(:scenario_id, non_null(:id))
@@ -46,8 +45,8 @@ defmodule ChessClubWeb.Schema do
       end)
 
       trigger(:make_move,
-        topic: fn move ->
-          move.id
+        topic: fn scenario ->
+          scenario.id
         end
       )
     end
@@ -62,7 +61,7 @@ defmodule ChessClubWeb.Schema do
     end
 
     @desc "Get all scenarios"
-    field :scenario_seeds, non_null(list_of(non_null(:scenario_seed))) do
+    field :scenarios, non_null(list_of(non_null(:scenario))) do
       resolve(&ScenarioResolver.all/3)
     end
   end

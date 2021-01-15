@@ -8,19 +8,15 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
-import Api.Subscription as Subscription
 import Graphql.Document
 import Graphql.Http
-import Graphql.Operation exposing (RootSubscription)
-import Graphql.SelectionSet exposing (SelectionSet)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
 import Js
 import Json.Decode
-import Page.Learn.Scenario as Scenario exposing (Move, moveSelection, scenarioSelection)
-import Page.Problem as Problem
+import Page.Learn.Scenario as Scenario exposing (Move, scenarioSelection, subscribeToMoves)
 import Session
 import Skeleton
 
@@ -45,7 +41,7 @@ type SubscriptionStatus
 type Scenarios
     = Failure
     | Loading
-    | Success (List Scenario.Scenario)
+    | Success (List Scenario.ScenarioSeed)
 
 
 init : Session.Data -> ( Model, Cmd Msg )
@@ -53,21 +49,15 @@ init session =
     case Session.getScenarios session of
         Just entries ->
             ( Model session (Success entries) NotConnected Nothing
-            , Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
+            , Cmd.none
             )
 
         Nothing ->
             ( Model session Loading NotConnected Nothing
             , Cmd.batch
-                [ Js.createSubscriptions (subscriptionDocument |> Graphql.Document.serializeSubscription)
-                , Scenario.getScenario session.backendEndpoint "1" GotScenario
+                [ Scenario.getScenarios session.backendEndpoint GotScenarios
                 ]
             )
-
-
-subscriptionDocument : SelectionSet Scenario.Scenario RootSubscription
-subscriptionDocument =
-    Subscription.moveMade { scenarioId = Api.Scalar.Id "1" } scenarioSelection
 
 
 
@@ -75,9 +65,13 @@ subscriptionDocument =
 
 
 type Msg
-    = GotScenario (Result (Graphql.Http.Error Scenario.Scenario) Scenario.Scenario)
+    = CreateScenario
+    | GetScenario Api.Scalar.Id
+    | GotScenarios (Result (Graphql.Http.Error (List Scenario.ScenarioSeed)) (List Scenario.ScenarioSeed))
+    | GotScenario (Result (Graphql.Http.Error Scenario.Scenario) Scenario.Scenario)
     | MakeMove Move
     | NewSubscriptionStatus SubscriptionStatus ()
+    | ScenarioCreated (Result (Graphql.Http.Error Id) Id)
     | SentMove (Result (Graphql.Http.Error ()) ())
     | SubscriptionDataReceived Json.Decode.Value
 
@@ -85,39 +79,86 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotScenario result ->
+        CreateScenario ->
+            ( model, Scenario.createScenario model.session.backendEndpoint ScenarioCreated )
+
+        GetScenario id ->
+            ( model, Scenario.getScenario model.session.backendEndpoint id GotScenario )
+
+        GotScenarios result ->
             case result of
                 Err _ ->
                     ( { model | scenarios = Failure }
                     , Cmd.none
                     )
 
-                Ok scenario ->
+                Ok scenarios ->
                     ( { model
-                        | scenarios = Success [ scenario ]
-                        , scenario = Just scenario
-                        , session = Session.addScenarios [ scenario ] model.session
+                        | scenarios = Success scenarios
+                        , session = Session.addScenarios scenarios model.session
                       }
                     , Cmd.none
                     )
 
+        GotScenario result ->
+            case result of
+                Err _ ->
+                    ( model
+                    , Cmd.none
+                    )
+
+                Ok scenario ->
+                    ( { model
+                        | scenario = Just scenario
+                      }
+                    , Js.createSubscriptions (subscribeToMoves scenario.id |> Graphql.Document.serializeSubscription)
+                    )
+
         MakeMove move ->
-            ( model
-            , Scenario.makeMove model.session.backendEndpoint move SentMove
-            )
+            case model.scenario of
+                Just scenario ->
+                    ( model
+                    , Scenario.makeMove model.session.backendEndpoint scenario.id move SentMove
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         NewSubscriptionStatus status () ->
             ( { model | subscriptionStatus = status }, Cmd.none )
+
+        ScenarioCreated result ->
+            case result of
+                Err _ ->
+                    ( model
+                    , Cmd.none
+                    )
+
+                Ok id ->
+                    case model.scenarios of
+                        Success scenarios ->
+                            ( { model | scenarios = Success <| scenarios ++ [ Scenario.ScenarioSeed id ] }, Scenario.getScenario model.session.backendEndpoint id GotScenario )
+
+                        -- This state should not be possible (assuming we aren't able to click the create button unless we are loaded.
+                        _ ->
+                            ( model
+                            , Cmd.none
+                            )
 
         SentMove _ ->
             ( model, Cmd.none )
 
         SubscriptionDataReceived newData ->
-            case Json.Decode.decodeValue (subscriptionDocument |> Graphql.Document.decoder) newData of
-                Ok scenario ->
-                    ( { model | scenario = Just scenario }, Cmd.none )
+            case model.scenario of
+                Just scenario ->
+                    case Json.Decode.decodeValue (subscribeToMoves scenario.id |> Graphql.Document.decoder) newData of
+                        Ok s ->
+                            ( { model | scenario = Just s }, Cmd.none )
 
-                Err error ->
+                        Err error ->
+                            ( model, Cmd.none )
+
+                Nothing ->
                     ( model, Cmd.none )
 
 
@@ -133,8 +174,7 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ viewConnection model.subscriptionStatus
-
-        --, lazy viewScenario model.scenario
+        , lazy viewScenarios model.scenarios
         , lazy viewLearn model.scenario
         ]
     }
@@ -150,6 +190,43 @@ viewConnection status =
             div [] [ text "It seems we can't connect :( maybe try refreshing." ]
 
 
+viewScenarios : Scenarios -> Html Msg
+viewScenarios scenarios =
+    div [ classList [ ( "scenarios", True ), ( "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4", True ) ] ]
+        [ case scenarios of
+            Failure ->
+                div [] []
+
+            --div Problem.styles (Problem.offline "scenarios.json")
+            Loading ->
+                text ""
+
+            Success [] ->
+                div [ class "flex-shrink-0 text-xl font-medium text-purple-600" ]
+                    [ button [ onClick CreateScenario ] [ text "Create Scenario" ]
+                    , text "You don't seem to have any scenarios."
+                    ]
+
+            Success ss ->
+                div []
+                    ([ button [ onClick CreateScenario ] [ text "Create Scenario" ]
+                     ]
+                        ++ List.map viewSelectScenario ss
+                    )
+        ]
+
+
+viewSelectScenario : Scenario.ScenarioSeed -> Html Msg
+viewSelectScenario { id } =
+    let
+        (Api.Scalar.Id raw) =
+            id
+    in
+    div []
+        [ button [ onClick (GetScenario id) ] [ text raw ]
+        ]
+
+
 
 -- VIEW LEARN
 
@@ -162,24 +239,7 @@ viewLearn scenario =
                 viewScenario s
 
             Nothing ->
-                div [ class "flex-shrink-0 text-xl font-medium text-purple-600" ]
-                    [ text "You don't seem to have any scenarios." ]
-
-        --Failure ->
-        --    div Problem.styles (Problem.offline "scenarios.json")
-        --
-        --Loading ->
-        --    text ""
-        --
-        ---- TODO handle multiple scenarios.
-        --Success (scenario :: _) ->
-        --    div []
-        --        [ viewScenario scenario
-        --        ]
-        --
-        --Success _ ->
-        --    div [ class "flex-shrink-0 text-xl font-medium text-purple-600" ]
-        --        [ text "You don't seem to have any scenarios." ]
+                div [] []
         ]
 
 
@@ -194,23 +254,6 @@ viewScenario scenario =
         , div [] (List.map viewMakeMove scenario.availableMoves)
         , p [ class "current-state" ] [ text scenario.currentState ]
         ]
-
-
-
---viewRecentMove : Maybe Scenario.Scenario -> Html Msg
---viewRecentMove scenario =
---    div [ class "container flex flex-col mx-auto px-4" ]
---        [ button [ onClick (MakeMove "a1" "a2"), class "bg-green-500" ] [ text "Move a1a2" ]
---        , button [ onClick (MakeMove "a2" "a1"), class "bg-red-500" ] [ text "Move a2a1" ]
---        , div [ class "container" ]
---            [ case move of
---                Nothing ->
---                    text "No recent move here"
---
---                Just m ->
---                    text <| m.squareFrom ++ m.squareTo
---            ]
---        ]
 
 
 viewMakeMove : Move -> Html Msg

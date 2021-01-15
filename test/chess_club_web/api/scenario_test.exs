@@ -1,6 +1,31 @@
 defmodule ChessClubWeb.ScenarioTest do
   use ChessClubWeb.ConnCase
 
+  describe "create scenario" do
+    test "creates a new scenario" do
+      assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 0
+
+      mutation = """
+      mutation { createScenario { currentState id } }
+      """
+
+      response =
+        build_conn()
+        |> post("/api/graphql", %{query: mutation})
+
+      scenario = List.last(ChessClub.all(ChessClub.Learn.Scenario))
+
+      assert json_response(response, 200) == %{
+               "data" => %{
+                 "createScenario" => %{
+                   "id" => "#{scenario.id}",
+                   "currentState" => "#{scenario.starting_state}"
+                 }
+               }
+             }
+    end
+  end
+
   describe "get scenarios" do
     test "returns all scenarios" do
       scenario = Factory.insert(:scenario)
@@ -8,7 +33,7 @@ defmodule ChessClubWeb.ScenarioTest do
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
 
       query = """
-      query { scenario_seeds { id, starting_state } }
+      query { scenarios { id } }
       """
 
       response =
@@ -17,10 +42,9 @@ defmodule ChessClubWeb.ScenarioTest do
 
       assert json_response(response, 200) == %{
                "data" => %{
-                 "scenario_seeds" => [
+                 "scenarios" => [
                    %{
-                     "id" => "#{scenario.id}",
-                     "starting_state" => scenario.starting_state
+                     "id" => "#{scenario.id}"
                    }
                  ]
                }
