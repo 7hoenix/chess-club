@@ -75,7 +75,3 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
-
-config :chess_club,
-       :chess_api_url,
-       System.get_env("CHESS_API_URL_DEV")
