@@ -32,7 +32,7 @@ defmodule ChessClubWeb.ScenarioResolver do
     move_commands = Enum.map(scenario.moves, & &1.move_command)
 
     {available_moves, current_state} =
-      Game.available_moves(scenario.starting_state, move_commands)
+      Game.available_moves(Game, scenario.starting_state, move_commands)
 
     %{
       current_state: current_state,

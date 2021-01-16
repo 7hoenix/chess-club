@@ -17,7 +17,11 @@ This code should help.
 ---------------------------------------------------------------------------------------
 
 ```bash
-mix phx.server
+source api/venv/bin/activate
+```
+
+```bash
+iex -S mix phx.server
 ```
 
 To run all tests: Elm, Elixir, and Cypress:
@@ -32,35 +36,63 @@ Install an elm dependency:
 npm run elm install mdgriffith/elm-ui --prefix assets
 ```
 
-Deployment.
+---------------------------------------------------------------------------------------
 
-First time setup:
+## First time setup
+
+---------------------------------------------------------------------------------------
+
+### Install python deps
+
+This project uses a Python library for move generation.
+
+So the first step is to wrap your python dependencies in a virtual environment:
+
+```bash
+pushd api
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.py
+popd
+```
+
+To deactivate venv later:
+
+```bash
+deactivate
+```
+
+### Configure your environment variables:
+
+This project is optimized to be used with [direnv](https://github.com/direnv/direnv)
+
+```bash
+cp .envrc{.example,}
+```
+
+Edit as needed for production. . .
+
+---------------------------------------------------------------------------------------
+
+## Deployment
+
+---------------------------------------------------------------------------------------
+
+### Elixir release
 
 ```bash
 cp rel/ansible/inventory/main.yml{.example,}
 ```
+
 Edit inventory file with actual nodes.
 
-Use the script as it runs ci first.
+**Use the script**
 
 ```bash
 ./scripts/deploy_prod.bash
 ```
 
-OR use the commands:
-
-```bash
-rm -rf priv/static
-mkdir -p priv/static
-npm run deploy --prefix assets
-
-mix phx.digest.clean
-mix phx.digest
-MIX_ENV=prod mix docker.build prod
-MIX_ENV=prod mix ansible.playbook deploy
-```
-
-Migrating the database
+### Migrate the database
 
 SSH into the host:
 - edit `/opt/chess_club/chess_club.env` to be able to source variables

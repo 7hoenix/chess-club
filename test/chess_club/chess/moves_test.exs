@@ -1,10 +1,15 @@
 defmodule ChessClub.MovesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias ChessClub.Chess.Move
   alias ChessClub.Chess.Game
 
   @fen "7k/8/7K/8/7P/8/8/8 b - - 0 77"
+
+  setup do
+    server = start_supervised!(Game)
+    %{chess_server: server}
+  end
 
   # NOTE: This currently is hooked up to run through erlport
   # So if its failing randomly, ensure that you are using a
@@ -12,8 +17,8 @@ defmodule ChessClub.MovesTest do
   # lib installed.
   describe "available_moves" do
     @tag mustexec: true
-    test "returns all available_moves" do
-      {moves, _} = Game.available_moves(@fen, [])
+    test "returns all available_moves", %{chess_server: server} do
+      {moves, _} = Game.available_moves(server, @fen, [])
 
       expected_moves = [
         %Move{
