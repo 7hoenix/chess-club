@@ -20,3 +20,4 @@ deploy_dir: "/opt/{{ app_name }}"
 # Dirs owned by the deploy user
 deploy_dirs:
   - "{{ deploy_dir }}"
+  - "{{ deploy_dir }}/api"
