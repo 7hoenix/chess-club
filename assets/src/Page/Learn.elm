@@ -8,6 +8,7 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
+import Chess.Board
 import Graphql.Document
 import Graphql.Http
 import Html exposing (..)
@@ -17,6 +18,7 @@ import Html.Lazy exposing (..)
 import Js
 import Json.Decode
 import Page.Learn.Scenario as Scenario exposing (Move, scenarioSelection, subscribeToMoves)
+import Prelude exposing (Segment(..))
 import Session
 import Skeleton
 
@@ -173,9 +175,9 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ viewConnection model.subscriptionStatus
-        , lazy viewScenarios model.scenarios
+        [ lazy viewScenarios model.scenarios
         , lazy viewLearn model.scenario
+        , Chess.Board.view
         ]
     }
 

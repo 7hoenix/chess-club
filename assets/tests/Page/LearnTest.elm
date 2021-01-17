@@ -13,9 +13,14 @@ initialStartingState =
     "some-fen-string"
 
 
+backendEndpoint : String
+backendEndpoint =
+    "http://foo.bar"
+
+
 loadedData =
     { scenarios = Just [ Scenario.ScenarioSeed (Id "1") ]
-    , backendEndpoint = "http://foo.bar"
+    , backendEndpoint = backendEndpoint
     }
 
 
@@ -23,7 +28,7 @@ start : ProgramTest Learn.Model Learn.Msg (Cmd Learn.Msg)
 start =
     ProgramTest.createDocument
         { init = \_ -> Learn.init loadedData
-        , view = \model -> Skeleton.view (\msg -> msg) (Learn.view model)
+        , view = \model -> Skeleton.view backendEndpoint (\msg -> msg) (Learn.view model)
         , update = Learn.update
         }
         |> ProgramTest.start ()
@@ -35,5 +40,5 @@ all =
         [ test "shows trivial" <|
             \() ->
                 start
-                    |> expectViewHas [ text "It seems we can't connect " ]
+                    |> expectViewHas [ text "1" ]
         ]

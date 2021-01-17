@@ -1,6 +1,5 @@
 module Skeleton exposing
     ( Details
-    , Segment
     , Warning(..)
     , view
     )
@@ -9,8 +8,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Lazy exposing (..)
-import Svg
-import Svg.Attributes
+import Prelude exposing (Segment(..))
 
 
 
@@ -31,32 +29,23 @@ type Warning
 
 
 
--- SEGMENT
-
-
-type Segment
-    = Text String
-    | Link String String
-
-
-
 -- VIEW
 
 
-view : (a -> msg) -> Details a -> Browser.Document msg
-view toMsg details =
+view : String -> (a -> msg) -> Details a -> Browser.Document msg
+view backendEndpoint toMsg details =
     { title =
         details.title
     , body =
-        [ viewAll toMsg details
+        [ viewAll backendEndpoint toMsg details
         ]
     }
 
 
-viewAll : (a -> msg) -> Details a -> Html msg
-viewAll toMsg details =
-    div [ class "flex min-h-screen flex-col" ]
-        [ viewHeader details.header
+viewAll : String -> (a -> msg) -> Details a -> Html msg
+viewAll backendEndpoint toMsg details =
+    div [ class "flex flex-col w-screen min-h-screen" ]
+        [ viewHeader <| [ Link backendEndpoint "7I" ] ++ details.header
         , viewBody toMsg details
         , viewFooter
         ]
@@ -77,14 +66,14 @@ viewBody toMsg details =
 
 viewHeader : List Segment -> Html msg
 viewHeader segments =
-    div [ class "header" ]
+    div [ class "header container mx-auto w-full h-10 bg-green-200 " ]
         [ div [ class "nav" ]
             [ case segments of
                 [] ->
                     text ""
 
                 _ ->
-                    h1 [] (List.intersperse slash (List.map viewSegment segments))
+                    h1 [ class "text-black text-xl p-2" ] (List.intersperse slash (List.map viewSegment segments))
             ]
         ]
 
@@ -125,6 +114,6 @@ viewFooter =
     footer [ class "container mx-auto p-8 bg-white dark:bg-gray-800" ]
         [ div [ class "text-center" ]
             [ a [ class "grey-link", href "https://github.com/7hoenix/chess-club" ] [ text "Check out the code" ]
-            , text " - © 2020 7hoenix Industries"
+            , text " - © 2021 7hoenix Industries"
             ]
         ]
