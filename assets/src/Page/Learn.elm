@@ -8,7 +8,7 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
-import Chess.Board
+import Chess.Game
 import Graphql.Document
 import Graphql.Http
 import Html exposing (..)
@@ -176,8 +176,8 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ lazy viewScenarios model.scenarios
+        , Chess.Game.view (Result.withDefault Chess.Game.blankBoard <| Chess.Game.fromFen "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         , lazy viewLearn model.scenario
-        , Chess.Board.view
         ]
     }
 
