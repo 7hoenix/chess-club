@@ -176,7 +176,6 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ lazy viewScenarios model.scenarios
-        , Chess.Game.view (Result.withDefault Chess.Game.blankBoard <| Chess.Game.fromFen "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         , lazy viewLearn model.scenario
         ]
     }
@@ -252,9 +251,12 @@ viewLearn scenario =
 viewScenario : Scenario.Scenario -> Html Msg
 viewScenario scenario =
     div [ class "container flex flex-col mx-auto px-4" ]
-        [ h3 [] [ text "Current state" ]
+        [ Chess.Game.view (Result.withDefault Chess.Game.blankBoard <| Chess.Game.fromFen scenario.currentState)
+
+        --h3 [] [ text "Current state" ]
         , div [] (List.map viewMakeMove scenario.availableMoves)
-        , p [ class "current-state" ] [ text scenario.currentState ]
+
+        --, p [ class "current-state" ] [ text scenario.currentState ]
         ]
 
 
