@@ -8,7 +8,7 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
-import Chess.Game
+import Chess.Game as Chess
 import Graphql.Document
 import Graphql.Http
 import Html exposing (..)
@@ -28,7 +28,8 @@ import Skeleton
 
 
 type alias Model =
-    { session : Session.Data
+    { chessModel : Maybe Chess.Model
+    , session : Session.Data
     , scenarios : Scenarios
     , subscriptionStatus : SubscriptionStatus
     , scenario : Maybe Scenario.Scenario
@@ -50,12 +51,12 @@ init : Session.Data -> ( Model, Cmd Msg )
 init session =
     case Session.getScenarios session of
         Just entries ->
-            ( Model session (Success entries) NotConnected Nothing
+            ( Model Nothing session (Success entries) NotConnected Nothing
             , Cmd.none
             )
 
         Nothing ->
-            ( Model session Loading NotConnected Nothing
+            ( Model Nothing session Loading NotConnected Nothing
             , Cmd.batch
                 [ Scenario.getScenarios session.backendEndpoint GotScenarios
                 ]
@@ -67,7 +68,8 @@ init session =
 
 
 type Msg
-    = CreateScenario
+    = ChessMsg Chess.Msg
+    | CreateScenario
     | GetScenario Api.Scalar.Id
     | GotScenarios (Result (Graphql.Http.Error (List Scenario.ScenarioSeed)) (List Scenario.ScenarioSeed))
     | GotScenario (Result (Graphql.Http.Error Scenario.Scenario) Scenario.Scenario)
@@ -81,6 +83,14 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ChessMsg chessMsg ->
+            case model.chessModel of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just chessModel ->
+                    stepChess model (Chess.update chessMsg chessModel)
+
         CreateScenario ->
             ( model, Scenario.createScenario model.session.backendEndpoint ScenarioCreated )
 
@@ -110,8 +120,10 @@ update msg model =
                     )
 
                 Ok scenario ->
+                    -- TODO: chessModel is directly dependent on scenario. . . are we able to combine these somehow?
                     ( { model
                         | scenario = Just scenario
+                        , chessModel = Just <| Chess.init scenario.availableMoves scenario.currentState
                       }
                     , Js.createSubscriptions (subscribeToMoves scenario.id |> Graphql.Document.serializeSubscription)
                     )
@@ -155,13 +167,23 @@ update msg model =
                 Just scenario ->
                     case Json.Decode.decodeValue (subscribeToMoves scenario.id |> Graphql.Document.decoder) newData of
                         Ok s ->
-                            ( { model | scenario = Just s }, Cmd.none )
+                            ( { model
+                                | scenario = Just s
+                                , chessModel = Just <| Chess.init s.availableMoves s.currentState
+                              }
+                            , Cmd.none
+                            )
 
                         Err error ->
                             ( model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
+
+
+stepChess : Model -> ( Chess.Model, Cmd Chess.Msg ) -> ( Model, Cmd Msg )
+stepChess model ( chessModel, chessCmds ) =
+    ( { model | chessModel = Just chessModel }, Cmd.map ChessMsg chessCmds )
 
 
 
@@ -176,7 +198,7 @@ view model =
     , attrs = [ class "container mx-auto px-4" ]
     , children =
         [ lazy viewScenarios model.scenarios
-        , lazy viewLearn model.scenario
+        , lazy2 viewLearn model.scenario model.chessModel
         ]
     }
 
@@ -232,14 +254,20 @@ viewSelectScenario { id } =
 -- VIEW LEARN
 
 
-viewLearn : Maybe Scenario.Scenario -> Html Msg
-viewLearn scenario =
+viewLearn : Maybe Scenario.Scenario -> Maybe Chess.Model -> Html Msg
+viewLearn scenario chessModel =
     div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4" ]
-        [ case scenario of
-            Just s ->
-                viewScenario s
+        [ case ( scenario, chessModel ) of
+            ( Just s, Just c ) ->
+                viewScenario s c
 
-            Nothing ->
+            ( Nothing, Just _ ) ->
+                div [] [ text "Scenario not loaded." ]
+
+            ( Just _, Nothing ) ->
+                div [] [ text "Chess not loaded." ]
+
+            ( Nothing, Nothing ) ->
                 div [] []
         ]
 
@@ -248,15 +276,11 @@ viewLearn scenario =
 -- VIEW SCENARIO
 
 
-viewScenario : Scenario.Scenario -> Html Msg
-viewScenario scenario =
+viewScenario : Scenario.Scenario -> Chess.Model -> Html Msg
+viewScenario scenario chessModel =
     div [ class "container flex flex-col mx-auto px-4" ]
-        [ Chess.Game.view (Result.withDefault Chess.Game.blankBoard <| Chess.Game.fromFen scenario.currentState)
-
-        --h3 [] [ text "Current state" ]
+        [ Html.map ChessMsg (Chess.view chessModel)
         , div [] (List.map viewMakeMove scenario.availableMoves)
-
-        --, p [ class "current-state" ] [ text scenario.currentState ]
         ]
 
 
