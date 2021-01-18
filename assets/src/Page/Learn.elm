@@ -279,7 +279,6 @@ viewScenario : Scenario.Scenario -> Chess.Model -> Html Msg
 viewScenario scenario chessModel =
     div [ class "container flex flex-col mx-auto px-4" ]
         [ Html.map ChessMsg (Chess.view chessModel)
-        , div [] (List.map viewMakeMove scenario.availableMoves)
         ]
 
 

@@ -110,7 +110,20 @@ update callbacks msg model =
 view : Model -> Html Msg
 view { game, considering } =
     div [ class "container mx-auto h-96 w-96" ]
-        [ viewBoard game considering
+        [ viewTurn game
+        , viewBoard game considering
+        ]
+
+
+viewTurn : Game -> Html Msg
+viewTurn (Game _ _ (Turn color)) =
+    div [ class "container mx-auto text-2xl" ]
+        [ case color of
+            Black ->
+                text "Your turn"
+
+            White ->
+                text "Opponents turn"
         ]
 
 
@@ -132,7 +145,8 @@ viewCell (Game pieces moves turn) considering column row =
         [ classList
             [ ( "square w-full h-full border border-gray-500 flex items-center justify-center", True )
             , ( shading column row, True )
-            , ( "bg-green-500", Prelude.maybe False (\consideringPosition -> canMoveHere consideringPosition ( column, row ) moves) considering )
+            , ( "bg-green-500", Prelude.maybe False (\consideringPosition -> hasFriendlyMovesToPosition turn consideringPosition ( column, row ) moves) considering )
+            , ( "bg-yellow-500", Prelude.maybe False (\consideringPosition -> hasEnemyMovesToPosition turn consideringPosition ( column, row ) moves) considering )
             , ( "considering", Prelude.maybe False (\consideringPosition -> consideringPosition == ( column, row )) considering )
             ]
         , onClick <| cellClickHandler turn moves considering ( column, row )
@@ -213,6 +227,21 @@ toAlgebraic ( column, row ) =
 -- SQUARE PROPERTIES
 
 
+hasFriendlyMovesToPosition : Turn -> Position -> Position -> List Move -> Bool
+hasFriendlyMovesToPosition turn squareTo squareFrom moves =
+    friendlyMovesToPosition turn squareTo squareFrom moves
+        |> List.isEmpty
+        |> not
+
+
+hasEnemyMovesToPosition : Turn -> Position -> Position -> List Move -> Bool
+hasEnemyMovesToPosition turn squareTo squareFrom moves =
+    movesToPosition squareTo squareFrom moves
+        |> List.filter (\move -> move.color /= turnToColor turn)
+        |> List.isEmpty
+        |> not
+
+
 friendlyMovesToPosition : Turn -> Position -> Position -> List Move -> List Move
 friendlyMovesToPosition turn squareTo squareFrom moves =
     movesToPosition squareTo squareFrom moves
@@ -231,13 +260,6 @@ turnToColor (Turn color) =
 
         White ->
             "w"
-
-
-canMoveHere : Position -> Position -> List Move -> Bool
-canMoveHere squareTo squareFrom moves =
-    movesToPosition squareTo squareFrom moves
-        |> List.isEmpty
-        |> not
 
 
 movesToPosition : Position -> Position -> List Move -> List Move
