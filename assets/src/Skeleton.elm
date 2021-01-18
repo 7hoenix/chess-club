@@ -53,7 +53,7 @@ viewAll backendEndpoint toMsg details =
 
 viewBody : (a -> msg) -> Details a -> Html msg
 viewBody toMsg details =
-    div [ class "container mx-auto flex-1 flex flex-col mt-10 section" ]
+    div [ class "container mx-auto flex-1 flex flex-col mt-10 section font-mono" ]
         [ lazy viewWarning details.warning
         , Html.map toMsg <|
             div details.attrs details.children

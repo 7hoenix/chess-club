@@ -168,7 +168,7 @@ update msg model =
                         Ok s ->
                             ( { model
                                 | scenario = Just s
-                                , chessModel = Just <| Chess.init s.availableMoves s.currentState
+                                , chessModel = Maybe.map (\chessModel -> { chessModel | game = Chess.makeGame s.availableMoves s.currentState }) model.chessModel
                               }
                             , Cmd.none
                             )
@@ -196,8 +196,8 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ lazy viewScenarios model.scenarios
-        , lazy2 viewLearn model.scenario model.chessModel
+        [ lazy2 viewLearn model.scenario model.chessModel
+        , lazy viewScenarios model.scenarios
         ]
     }
 
@@ -214,7 +214,7 @@ viewConnection status =
 
 viewScenarios : Scenarios -> Html Msg
 viewScenarios scenarios =
-    div [ classList [ ( "scenarios", True ), ( "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4", True ) ] ]
+    div [ classList [ ( "scenarios", True ), ( "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex justify-end items-center space-x-4", True ) ] ]
         [ case scenarios of
             Failure ->
                 div [] []
@@ -279,13 +279,6 @@ viewScenario : Scenario.Scenario -> Chess.Model -> Html Msg
 viewScenario scenario chessModel =
     div [ class "container flex flex-col mx-auto px-4" ]
         [ Html.map ChessMsg (Chess.view chessModel)
-        ]
-
-
-viewMakeMove : Move -> Html Msg
-viewMakeMove move =
-    div []
-        [ button [ onClick (MakeMove move), class <| backgroundColor move.color ] [ text <| "Move " ++ move.squareFrom ++ move.squareTo ]
         ]
 
 
