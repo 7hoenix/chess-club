@@ -18,7 +18,6 @@ import Html.Lazy exposing (..)
 import Js
 import Json.Decode
 import Page.Learn.Scenario as Scenario exposing (Move, scenarioSelection, subscribeToMoves)
-import Prelude exposing (Segment(..))
 import Session
 import Skeleton
 
@@ -89,7 +88,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just chessModel ->
-                    stepChess model (Chess.update chessMsg chessModel)
+                    stepChess model (Chess.update (Chess.Callbacks MakeMove) chessMsg chessModel)
 
         CreateScenario ->
             ( model, Scenario.createScenario model.session.backendEndpoint ScenarioCreated )
@@ -181,9 +180,9 @@ update msg model =
                     ( model, Cmd.none )
 
 
-stepChess : Model -> ( Chess.Model, Cmd Chess.Msg ) -> ( Model, Cmd Msg )
+stepChess : Model -> ( Chess.Model, Cmd Msg ) -> ( Model, Cmd Msg )
 stepChess model ( chessModel, chessCmds ) =
-    ( { model | chessModel = Just chessModel }, Cmd.map ChessMsg chessCmds )
+    ( { model | chessModel = Just chessModel }, chessCmds )
 
 
 

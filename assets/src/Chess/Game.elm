@@ -1,4 +1,4 @@
-module Chess.Game exposing (Model, Msg, blankBoard, fromFen, init, update, view)
+module Chess.Game exposing (Callbacks, Model, Msg, blankBoard, fromFen, init, update, view)
 
 import Dict exposing (Dict)
 import Html exposing (Html, div, text)
@@ -8,6 +8,7 @@ import Json.Decode as D
 import Json.Encode as E
 import Page.Learn.Scenario exposing (Move)
 import Prelude
+import Task
 
 
 
@@ -66,17 +67,26 @@ init availableMoves currentState =
 
 type Msg
     = StartConsidering Position
+    | MakeMove Move
+
+
+type alias Callbacks msg =
+    { makeMove : Move -> msg
+    }
 
 
 
 -- UPDATE
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Callbacks msg -> Msg -> Model -> ( Model, Cmd msg )
+update callbacks msg model =
     case msg of
         StartConsidering position ->
             ( { model | considering = Just position }, Cmd.none )
+
+        MakeMove move ->
+            ( model, Task.perform callbacks.makeMove (Task.succeed move) )
 
 
 
@@ -88,11 +98,6 @@ view { game, considering } =
     div [ class "container mx-auto h-96 w-96" ]
         [ viewBoard game considering
         ]
-
-
-viewSquare : Html Msg
-viewSquare =
-    div [ class "bg-gray-300" ] [ text "bar" ]
 
 
 viewBoard : Game -> Maybe Position -> Html Msg
@@ -116,7 +121,7 @@ viewCell (Game pieces moves turn) considering column row =
             , ( "bg-green-500", Prelude.maybe False (\consideringPosition -> canMoveHere consideringPosition ( column, row ) moves) considering )
             , ( "considering", Prelude.maybe False (\consideringPosition -> consideringPosition == ( column, row )) considering )
             ]
-        , onClick (StartConsidering ( column, row ))
+        , onClick <| cellClickHandler turn moves considering ( column, row )
         ]
         (case Dict.get ( column, row ) pieces of
             Just piece ->
@@ -125,6 +130,24 @@ viewCell (Game pieces moves turn) considering column row =
             Nothing ->
                 []
         )
+
+
+cellClickHandler : Turn -> List Move -> Maybe Position -> Position -> Msg
+cellClickHandler turn availableMoves considering position =
+    case considering of
+        Nothing ->
+            StartConsidering position
+
+        Just c ->
+            case friendlyMovesToPosition turn c position availableMoves of
+                [] ->
+                    StartConsidering position
+
+                [ move ] ->
+                    MakeMove move
+
+                arbitraryPromotionMove :: promotionMoves ->
+                    MakeMove arbitraryPromotionMove
 
 
 shading : Int -> Int -> String
@@ -176,11 +199,36 @@ toAlgebraic ( column, row ) =
 -- SQUARE PROPERTIES
 
 
+friendlyMovesToPosition : Turn -> Position -> Position -> List Move -> List Move
+friendlyMovesToPosition turn squareTo squareFrom moves =
+    movesToPosition squareTo squareFrom moves
+        |> List.filter (\move -> move.color == turnToColor turn)
+
+
+
+-- TODO: clean this up with a custom codec.
+
+
+turnToColor : Turn -> String
+turnToColor (Turn color) =
+    case color of
+        Black ->
+            "b"
+
+        White ->
+            "w"
+
+
 canMoveHere : Position -> Position -> List Move -> Bool
 canMoveHere squareTo squareFrom moves =
-    List.filter (\move -> move.squareFrom == toAlgebraic squareFrom && move.squareTo == toAlgebraic squareTo) moves
+    movesToPosition squareTo squareFrom moves
         |> List.isEmpty
         |> not
+
+
+movesToPosition : Position -> Position -> List Move -> List Move
+movesToPosition squareTo squareFrom =
+    List.filter (\move -> move.squareFrom == toAlgebraic squareFrom && move.squareTo == toAlgebraic squareTo)
 
 
 
