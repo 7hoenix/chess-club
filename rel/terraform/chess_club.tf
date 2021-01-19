@@ -383,6 +383,10 @@ resource "aws_alb_target_group" "chess_club" {
   vpc_id      = aws_vpc.chess_club.id
   target_type = "instance"
 
+  stickiness {
+    type = "lb_cookie"
+  }
+
   health_check {
     path    = "/version"
     matcher = "200"
