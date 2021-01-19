@@ -38,6 +38,7 @@ type alias Model =
 type SubscriptionStatus
     = Connected
     | NotConnected
+    | Reconnecting
 
 
 type Scenarios
@@ -196,7 +197,7 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ lazy2 viewLearn model.scenario model.chessModel
+        [ lazy3 viewLearn model.scenario model.chessModel model.subscriptionStatus
         , lazy viewScenarios model.scenarios
         ]
     }
@@ -206,10 +207,13 @@ viewConnection : SubscriptionStatus -> Html Msg
 viewConnection status =
     case status of
         Connected ->
-            div [] [ text "Connected :tada:!" ]
+            div [ class "rounded-full bg-green-500 w-4 h-4" ] []
+
+        Reconnecting ->
+            div [ class "rounded-full bg-yellow-500 w-4 h-4" ] []
 
         NotConnected ->
-            div [] [ text "It seems we can't connect :( maybe try refreshing." ]
+            div [ class "rounded-full bg-red-500 w-4 h-4" ] []
 
 
 viewScenarios : Scenarios -> Html Msg
@@ -253,12 +257,12 @@ viewSelectScenario { id } =
 -- VIEW LEARN
 
 
-viewLearn : Maybe Scenario.Scenario -> Maybe Chess.Model -> Html Msg
-viewLearn scenario chessModel =
+viewLearn : Maybe Scenario.Scenario -> Maybe Chess.Model -> SubscriptionStatus -> Html Msg
+viewLearn scenario chessModel subscriptionStatus =
     div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4" ]
         [ case ( scenario, chessModel ) of
             ( Just s, Just c ) ->
-                viewScenario s c
+                viewScenario s c subscriptionStatus
 
             ( Nothing, Just _ ) ->
                 div [] [ text "Scenario not loaded." ]
@@ -275,10 +279,11 @@ viewLearn scenario chessModel =
 -- VIEW SCENARIO
 
 
-viewScenario : Scenario.Scenario -> Chess.Model -> Html Msg
-viewScenario scenario chessModel =
+viewScenario : Scenario.Scenario -> Chess.Model -> SubscriptionStatus -> Html Msg
+viewScenario scenario chessModel subscriptionStatus =
     div [ class "container flex flex-col mx-auto px-4" ]
-        [ Html.map ChessMsg (Chess.view chessModel)
+        [ viewConnection subscriptionStatus
+        , Html.map ChessMsg (Chess.view chessModel)
         ]
 
 
@@ -300,4 +305,5 @@ subscriptions model =
     Sub.batch
         [ Js.gotSubscriptionData SubscriptionDataReceived
         , Js.socketStatusConnected (NewSubscriptionStatus Connected)
+        , Js.socketStatusReconnecting (NewSubscriptionStatus Reconnecting)
         ]
