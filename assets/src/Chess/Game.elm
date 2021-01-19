@@ -14,15 +14,14 @@ module Chess.Game exposing
     )
 
 import Dict exposing (Dict)
-import Html exposing (Html, div, fieldset, input, label, text)
+import Html exposing (Attribute, Html, div, fieldset, input, label, text)
 import Html.Attributes exposing (checked, class, classList, name, type_)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onMouseLeave, onMouseOver)
 import Json.Decode as D
 import Json.Encode as E
 import Page.Learn.Scenario exposing (Move)
-import Prelude
-import Svg exposing (circle, g, polygon, rect, svg)
-import Svg.Attributes exposing (cx, cy, d, display, enableBackground, fill, height, id, opacity, points, r, stroke, strokeMiterlimit, style, transform, version, viewBox, width, x, y)
+import Svg exposing (circle, g, svg)
+import Svg.Attributes exposing (cx, cy, d, height, id, r, style, transform, version, width)
 import Task
 
 
@@ -32,7 +31,7 @@ import Task
 
 type alias Model =
     { game : Game
-    , considering : Maybe Position
+    , considering : Considering
     , playerColor : Color
     }
 
@@ -67,6 +66,12 @@ type Color
     | White
 
 
+type Considering
+    = NotConsidering
+    | HoveringOver Position
+    | ConsideringMovingTo Position
+
+
 blankBoard : Game
 blankBoard =
     Game Dict.empty [] (Turn Black)
@@ -74,7 +79,7 @@ blankBoard =
 
 init : List Move -> String -> Model
 init availableMoves currentState =
-    Model (makeGame availableMoves currentState) Nothing Black
+    Model (makeGame availableMoves currentState) NotConsidering Black
 
 
 makeGame : List Move -> String -> Game
@@ -89,6 +94,8 @@ makeGame availableMoves currentState =
 type Msg
     = ChangeTeam Color
     | StartConsidering Position
+    | StartHovering Position
+    | StopHovering
     | MakeMove Move
     | NoOp
 
@@ -109,10 +116,24 @@ update callbacks msg model =
             ( { model | playerColor = color }, Cmd.none )
 
         StartConsidering position ->
-            ( { model | considering = Just position }, Cmd.none )
+            ( { model | considering = ConsideringMovingTo position }, Cmd.none )
+
+        StartHovering position ->
+            ( { model | considering = HoveringOver position }, Cmd.none )
+
+        StopHovering ->
+            case model.considering of
+                ConsideringMovingTo _ ->
+                    ( model, Cmd.none )
+
+                HoveringOver _ ->
+                    ( { model | considering = NotConsidering }, Cmd.none )
+
+                NotConsidering ->
+                    ( { model | considering = NotConsidering }, Cmd.none )
 
         MakeMove move ->
-            ( { model | considering = Nothing }, Task.perform callbacks.makeMove (Task.succeed move) )
+            ( { model | considering = NotConsidering }, Task.perform callbacks.makeMove (Task.succeed move) )
 
         NoOp ->
             ( model, Cmd.none )
@@ -161,37 +182,83 @@ viewTurn (Game _ _ (Turn color)) playerColor =
         ]
 
 
-viewBoard : Game -> Maybe Position -> Color -> Html Msg
+viewBoard : Game -> Considering -> Color -> Html Msg
 viewBoard ((Game _ _ (Turn turnColor)) as game) considering playerColor =
     div
         [ classList
             [ ( "grid grid-cols-8 h-full w-full border-2 border-gray-500", True )
             , ( "rotated", playerColor == White )
             ]
+        , onMouseLeave StopHovering
+        , class "w-full h-full"
         ]
         (List.map (viewColumn game considering playerColor) (List.reverse (List.range 1 8)))
 
 
-viewColumn : Game -> Maybe Position -> Color -> Int -> Html Msg
+viewColumn : Game -> Considering -> Color -> Int -> Html Msg
 viewColumn game considering playerColor column =
     div [ class "column h-1/8" ]
         (List.map (viewCell game considering playerColor column) (List.range 1 8))
 
 
-viewCell : Game -> Maybe Position -> Color -> Int -> Int -> Html Msg
-viewCell (Game pieces moves turn) considering playerColor column row =
+viewCell : Game -> Considering -> Color -> Int -> Int -> Html Msg
+viewCell game considering playerColor column row =
     div
         [ classList
-            [ ( "square w-full h-full border border-gray-500 flex items-center justify-center", True )
+            [ ( "square w-full h-full flex items-center justify-center", True )
             , ( shading column row, True )
-            , ( "bg-green-500", Prelude.maybe False (\consideringPosition -> hasFriendlyMovesToPosition turn consideringPosition ( column, row ) moves) considering )
-            , ( "bg-yellow-500", Prelude.maybe False (\consideringPosition -> hasEnemyMovesToPosition turn consideringPosition ( column, row ) moves) considering )
-            , ( "considering", Prelude.maybe False (\consideringPosition -> consideringPosition == ( column, row )) considering )
             , ( "rotated", playerColor == White )
             ]
-        , onClick <| cellClickHandler turn playerColor moves considering ( column, row )
         ]
-        (case Dict.get ( column, row ) pieces of
+        [ viewSquare game considering playerColor ( column, row ) ]
+
+
+viewSquare : Game -> Considering -> Color -> Position -> Html Msg
+viewSquare (Game pieces moves ((Turn turnColor) as turn)) considering playerColor position =
+    if turnColor == playerColor then
+        case considering of
+            NotConsidering ->
+                viewSquareDetails pieces
+                    position
+                    []
+                    [ onClick <| StartConsidering position
+                    , onMouseOver <| StartHovering position
+                    ]
+
+            HoveringOver consideringPosition ->
+                viewSquareDetails pieces
+                    position
+                    [ ( "bg-green-500", hasFriendlyMovesToPosition turn consideringPosition position moves )
+                    ]
+                    [ onClick <| StartConsidering position
+                    , onMouseOver <| StartHovering position
+                    ]
+
+            ConsideringMovingTo consideringPosition ->
+                viewSquareDetails pieces
+                    position
+                    [ ( "bg-green-500", hasFriendlyMovesToPosition turn consideringPosition position moves )
+                    , ( "bg-yellow-500", hasEnemyMovesToPosition turn consideringPosition position moves )
+                    ]
+                    [ onClick <| handleConsideringMovingTo turn consideringPosition position moves
+                    ]
+
+    else
+        viewSquareDetails pieces position [] []
+
+
+viewSquareDetails : Dict Position Piece -> Position -> List ( String, Bool ) -> List (Attribute Msg) -> Html Msg
+viewSquareDetails pieces position additionalClasses additionalEvents =
+    div
+        ([ classList
+            ([ ( "w-full h-full", True )
+             ]
+                ++ additionalClasses
+            )
+         ]
+            ++ additionalEvents
+        )
+        (case Dict.get position pieces of
             Just piece ->
                 [ findSvg piece [] ]
 
@@ -200,26 +267,17 @@ viewCell (Game pieces moves turn) considering playerColor column row =
         )
 
 
-cellClickHandler : Turn -> Color -> List Move -> Maybe Position -> Position -> Msg
-cellClickHandler ((Turn turnColor) as turn) playerColor availableMoves considering position =
-    if turnColor == playerColor then
-        case considering of
-            Nothing ->
-                StartConsidering position
+handleConsideringMovingTo : Turn -> Position -> Position -> List Move -> Msg
+handleConsideringMovingTo turn consideringMovingTo squareFrom availableMoves =
+    case friendlyMovesToPosition turn consideringMovingTo squareFrom availableMoves of
+        [] ->
+            StartHovering squareFrom
 
-            Just c ->
-                case friendlyMovesToPosition turn c position availableMoves of
-                    [] ->
-                        StartConsidering position
+        [ move ] ->
+            MakeMove move
 
-                    [ move ] ->
-                        MakeMove move
-
-                    arbitraryPromotionMove :: promotionMoves ->
-                        MakeMove arbitraryPromotionMove
-
-    else
-        NoOp
+        arbitraryPromotionMove :: promotionMoves ->
+            MakeMove arbitraryPromotionMove
 
 
 shading : Int -> Int -> String
