@@ -51,3 +51,5 @@ secret.auto.tfvars
 # This is only here because we have not figured out how to pass variables to ansible
 rel/ansible/inventory/main.yml
 
+**/__pycache__
+venv

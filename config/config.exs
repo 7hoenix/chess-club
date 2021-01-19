@@ -7,7 +7,6 @@
 # General application configuration
 use Mix.Config
 
-
 config :chess_club, ChessClub.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "chess_club",

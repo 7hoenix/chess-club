@@ -14,7 +14,7 @@ initialStartingState =
 
 
 loadedData =
-    { scenarios = Just [ Scenario.Scenario initialStartingState (Id "1") ]
+    { scenarios = Just [ Scenario.ScenarioSeed (Id "1") ]
     , backendEndpoint = "http://foo.bar"
     }
 
@@ -35,5 +35,5 @@ all =
         [ test "shows trivial" <|
             \() ->
                 start
-                    |> expectViewHas [ text initialStartingState ]
+                    |> expectViewHas [ text "It seems we can't connect " ]
         ]

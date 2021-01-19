@@ -44,6 +44,7 @@ defmodule ChessClub.MixProject do
       {:absinthe_phoenix, "~> 2.0.0"},
       {:absinthe_plug, "~> 1.5.0"},
       {:ecto_sql, "~> 3.4"},
+      {:erlport, "~> 0.10.1"},
       {:ex_machina, "~> 2.4", only: [:dev, :test]},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
@@ -54,6 +55,7 @@ defmodule ChessClub.MixProject do
       {:phoenix_live_dashboard, "~> 0.4"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:plug_cowboy, "~> 2.0"},
+      {:poison, "~> 4.0.1"},
       {:postgrex, ">= 0.0.0"},
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"}

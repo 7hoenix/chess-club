@@ -10,6 +10,10 @@
     - name: Install python 3
       raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal)
 
+    # Install pip
+    - name: Install pip
+      raw: (apt -y update && apt install -y python3-pip)
+
     # Add the deploy group set in ../vars/main.yml if it does not exists
     - name: "Add {{ deploy_group }} group"
       group: name={{ deploy_group }} state=present

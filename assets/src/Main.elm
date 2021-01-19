@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (text)
 import Page.Learn as Learn
 import Page.Problem as Problem
 import Session

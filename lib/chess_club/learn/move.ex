@@ -4,8 +4,7 @@ defmodule ChessClub.Learn.Move do
   alias ChessClub.Learn.Scenario
 
   schema "moves" do
-    field :square_from, :string
-    field :square_to, :string
+    field :move_command, :string
     belongs_to :scenario, Scenario
 
     timestamps()
@@ -14,7 +13,7 @@ defmodule ChessClub.Learn.Move do
   @doc false
   def changeset(move, attrs) do
     move
-    |> cast(attrs, [:square_from, :square_to, :scenario_id])
-    |> validate_required([:square_from, :square_to, :scenario_id])
+    |> cast(attrs, [:move_command, :scenario_id])
+    |> validate_required([:move_command, :scenario_id])
   end
 end

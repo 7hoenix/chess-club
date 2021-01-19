@@ -9,6 +9,26 @@
         src: "../templates/env.j2"
         dest: "{{ deploy_dir }}/{{ app_name }}.env"
 
+    - name: Copy python app file
+      ansible.builtin.copy:
+        src: "../../../api/app.py"
+        dest: "{{ deploy_dir }}/api/app.py"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: '0700'
+
+    - name: Copy python requirements file
+      ansible.builtin.copy:
+        src: "../../../api/requirements.txt"
+        dest: "{{ deploy_dir }}/api/requirements.txt"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: '0700'
+
+    - name: Install python dependencies
+      pip:
+        requirements: "{{ deploy_dir }}/api/requirements.txt"
+
     - name: "Check if {{ deploy_dir }} exists"
       stat:
         path: "{{ deploy_dir }}/{{ app_name }}.tar.gz"

@@ -1,0 +1,8 @@
+export SECRET_KEY_BASE='SOME_SECRET_KEY_BASE'
+export DATABASE_URL='some.database.url.com'
+
+export SECRET_KEY_BASE_PROD='SOME_PROD_SECRET_KEY_BASE'
+export DATABASE_URL_PROD='ecto://dbname:dbpassword@dburl.com'
+export DATABASE_USER_PROD='db_name'
+export DATABASE_PASSWORD_PROD='database_password'
+export DATABASE_HOST_PROD='db_host'
