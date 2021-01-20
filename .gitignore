@@ -30,6 +30,7 @@ npm-debug.log
 /assets/src/Api/
 /assets/cypress/videos/
 
+# Elm install artifacts
 elm-stuff
 
 # Since we are building assets from assets/,
@@ -37,19 +38,29 @@ elm-stuff
 # this depending on your deployment strategy.
 /priv/static/
 
+# Envrc file
 .envrc
 
+# Private keys
 rel/*key*
 
+# Terraform files with private data
 .terraform*
 terraform.tfstate
 terraform.tfstate.backup
 secret.auto.tfvars
 
+# Intellij configs
 .idea
 
 # This is only here because we have not figured out how to pass variables to ansible
 rel/ansible/inventory/main.yml
 
+# Python venv stuff
 **/__pycache__
 venv
+
+# ASDF tool versions file
+.toolversions
+/assets/.tool-versions
+

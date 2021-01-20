@@ -31,7 +31,8 @@ defmodule Mix.Tasks.Docker.Build do
       "secret_key_base=#{secret_key_base}"
     ]
 
-    full_command = "build --build-arg #{Enum.join(args, " --build-arg ")} -t #{@app_name}:latest ."
+    full_command =
+      "build --build-arg #{Enum.join(args, " --build-arg ")} -t #{@app_name}:latest ."
 
     docker(full_command)
   end

@@ -7,6 +7,5 @@ defmodule ChessClub.Repo.Migrations.CreateScenarios do
 
       timestamps()
     end
-
   end
 end
