@@ -45,7 +45,7 @@ view backendEndpoint toMsg details =
 viewAll : String -> (a -> msg) -> Details a -> Html msg
 viewAll backendEndpoint toMsg details =
     div [ class "flex flex-col w-screen min-h-screen" ]
-        [ viewHeader <| [ Link backendEndpoint "7I" ] ++ details.header
+        [ viewHeader <| [ Link (backendEndpoint ++ "/app") "7I" ] ++ details.header
         , viewBody toMsg details
         , viewFooter
         ]

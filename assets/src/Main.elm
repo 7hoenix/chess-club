@@ -163,7 +163,7 @@ stepUrl url model =
 
         parser =
             oneOf
-                [ route top
+                [ route (s "app")
                     (stepLearn model (Learn.init session))
                 ]
     in

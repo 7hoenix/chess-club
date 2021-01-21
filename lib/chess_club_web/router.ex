@@ -13,15 +13,36 @@ defmodule ChessClubWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", ChessClubWeb do
-    pipe_through :browser
+  # NOTE: This :auth pipeline is for authenticating and does NOT mean that the underlying resource is authenticated.
+  # For routes that are authenticated use the :ensure_auth pipeline instead.
+  pipeline :auth do
+    plug ChessClub.UserManager.Pipeline
+  end
 
-    get "/", PageController, :index
+  pipeline :ensure_auth do
+    plug Guardian.Plug.EnsureAuthenticated
+  end
+
+  # LOGIN and LOGOUT
+  scope "/", ChessClubWeb do
+    pipe_through [:browser, :auth]
+
+    # get "/", PageController, :index
+
+    get "/login", SessionController, :new
+    post "/login", SessionController, :login
+    get "/logout", SessionController, :logout
   end
 
   # Added for use while troubleshooting
   scope "/version", ChessClubWeb do
     get "/", VersionController, :index
+  end
+
+  scope "/", ChessClubWeb do
+    pipe_through [:browser, :auth, :ensure_auth]
+
+    get "/app", PageController, :index
   end
 
   scope "/api" do
