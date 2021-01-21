@@ -3,6 +3,7 @@ defmodule ChessClub.Factory do
 
   alias ChessClub.Learn.Scenario
   alias ChessClub.Learn.Move
+  alias ChessClub.UserManager.User
 
   @blank_board "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -16,6 +17,13 @@ defmodule ChessClub.Factory do
     %Move{
       move_command: "a2a3",
       scenario: build(:scenario)
+    }
+  end
+
+  def user_factory do
+    %User{
+      username: "joyce",
+      password: "password1"
     }
   end
 end

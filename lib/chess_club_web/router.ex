@@ -29,6 +29,9 @@ defmodule ChessClubWeb.Router do
 
     get "/", PageController, :index
 
+    get "/account", UserController, :new
+    post "/account", UserController, :create
+
     get "/login", SessionController, :new
     post "/login", SessionController, :login
     get "/logout", SessionController, :logout
