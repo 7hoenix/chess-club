@@ -10,7 +10,9 @@
   </head>
   <body
           data-backend-endpoint="<%= ChessClubWeb.Endpoint.static_url() %>"
-          data-socket-endpoint="<%= ChessClubWeb.Endpoint.socket_url() %>">
+          data-socket-endpoint="<%= ChessClubWeb.Endpoint.socket_url() %>"
+          data-auth-token="<%= @auth_token %>"
+          >
     <script type="text/javascript" src="<%= Routes.static_url(@conn, "/js/app.js") %>"></script>
   </body>
 </html>

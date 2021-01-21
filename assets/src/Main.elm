@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Backend exposing (Backend)
 import Browser
 import Browser.Navigation as Nav
 import Page.Learn as Learn
@@ -32,7 +33,7 @@ main =
 type alias Model =
     { key : Nav.Key
     , page : Page
-    , backendEndpoint : String
+    , backend : Backend
     }
 
 
@@ -63,7 +64,7 @@ view : Model -> Browser.Document Msg
 view model =
     case model.page of
         NotFound _ ->
-            Skeleton.view model.backendEndpoint
+            Skeleton.view model.backend
                 never
                 { title = "Not Found"
                 , header = []
@@ -73,7 +74,7 @@ view model =
                 }
 
         Learn learn ->
-            Skeleton.view model.backendEndpoint LearnMsg (Learn.view learn)
+            Skeleton.view model.backend LearnMsg (Learn.view learn)
 
 
 
@@ -81,15 +82,17 @@ view model =
 
 
 type alias Flags =
-    { backendEndpoint : String }
+    { backendEndpoint : String
+    , authToken : String
+    }
 
 
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init { backendEndpoint } url key =
+init { backendEndpoint, authToken } url key =
     stepUrl url
         { key = key
-        , page = NotFound <| Session.empty backendEndpoint
-        , backendEndpoint = backendEndpoint
+        , page = NotFound Session.empty
+        , backend = Backend.api backendEndpoint authToken
         }
 
 
@@ -124,7 +127,7 @@ update message model =
         LearnMsg msg ->
             case model.page of
                 Learn learn ->
-                    stepLearn model (Learn.update msg learn)
+                    stepLearn model (Learn.update model.backend msg learn)
 
                 _ ->
                     ( model, Cmd.none )
@@ -164,7 +167,7 @@ stepUrl url model =
         parser =
             oneOf
                 [ route (s "app")
-                    (stepLearn model (Learn.init session))
+                    (stepLearn model (Learn.init model.backend session))
                 ]
     in
     case Parser.parse parser url of
