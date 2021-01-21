@@ -50,7 +50,7 @@ scenarioSelection =
 
 getScenario : Backend -> Id -> (Result (Graphql.Http.Error Scenario) Scenario -> msg) -> Cmd msg
 getScenario backend id msg =
-    sendQuery backend (scenarioQuery id) msg
+    Backend.sendAuthorizedQuery backend (scenarioQuery id) msg
 
 
 
@@ -75,7 +75,7 @@ scenarioSeedSelection =
 
 getScenarios : Backend -> (Result (Graphql.Http.Error (List ScenarioSeed)) (List ScenarioSeed) -> msg) -> Cmd msg
 getScenarios backend msg =
-    sendQuery backend scenariosQuery msg
+    Backend.sendAuthorizedQuery backend scenariosQuery msg
 
 
 
@@ -113,7 +113,7 @@ sendMakeMove id { moveCommand } =
 
 makeMove : Backend -> Id -> Move -> (Result (Graphql.Http.Error ()) () -> msg) -> Cmd msg
 makeMove backend id move msg =
-    sendMutation backend (sendMakeMove id move) msg
+    Backend.sendAuthorizedMutation backend (sendMakeMove id move) msg
 
 
 
@@ -136,24 +136,4 @@ createScenarioMutation =
 
 createScenario : Backend -> (Result (Graphql.Http.Error Id) Id -> msg) -> Cmd msg
 createScenario backend msg =
-    sendMutation backend createScenarioMutation msg
-
-
-
--- GENERIC
-
-
-sendQuery : Backend -> SelectionSet decodesTo RootQuery -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
-sendQuery backend sender msg =
-    sender
-        |> Graphql.Http.queryRequest (backend.endpoint ++ "/api/graphql")
-        |> Graphql.Http.withHeader "authorization" ("Bearer " ++ Backend.getAuthToken backend.authToken)
-        |> Graphql.Http.send msg
-
-
-sendMutation : Backend -> SelectionSet decodesTo RootMutation -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
-sendMutation backend sender msg =
-    sender
-        |> Graphql.Http.mutationRequest (backend.endpoint ++ "/api/graphql")
-        |> Graphql.Http.withHeader "authorization" ("Bearer " ++ Backend.getAuthToken backend.authToken)
-        |> Graphql.Http.send msg
+    Backend.sendAuthorizedMutation backend createScenarioMutation msg
