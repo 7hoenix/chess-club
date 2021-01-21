@@ -27,7 +27,7 @@ defmodule ChessClubWeb.Router do
   scope "/", ChessClubWeb do
     pipe_through [:browser, :auth]
 
-    # get "/", PageController, :index
+    get "/", PageController, :index
 
     get "/login", SessionController, :new
     post "/login", SessionController, :login
@@ -42,7 +42,7 @@ defmodule ChessClubWeb.Router do
   scope "/", ChessClubWeb do
     pipe_through [:browser, :auth, :ensure_auth]
 
-    get "/app", PageController, :index
+    get "/app", PageController, :app
   end
 
   scope "/api" do

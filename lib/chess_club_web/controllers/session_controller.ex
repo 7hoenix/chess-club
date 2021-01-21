@@ -11,7 +11,7 @@ defmodule ChessClubWeb.SessionController do
       redirect(conn, to: "/app")
     else
       conn
-      |> put_layout("auth.html")
+      |> put_layout("index.html")
       |> render("new.html", %{changeset: changeset, action: Routes.session_path(conn, :login)})
     end
   end
