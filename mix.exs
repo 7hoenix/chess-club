@@ -43,6 +43,7 @@ defmodule ChessClub.MixProject do
       {:absinthe, "~> 1.5.0"},
       {:absinthe_phoenix, "~> 2.0.0"},
       {:absinthe_plug, "~> 1.5.0"},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:ecto_sql, "~> 3.4"},
       {:erlport, "~> 0.10.1"},
       {:ex_machina, "~> 2.4", only: [:dev, :test]},
