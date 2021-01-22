@@ -8,7 +8,6 @@ defmodule ChessClub.UserManager do
 
   alias ChessClub.UserManager.User
 
-  alias Argon2
   import Ecto.Query, only: [from: 2]
 
   def authenticate_user(username, plain_text_password) do

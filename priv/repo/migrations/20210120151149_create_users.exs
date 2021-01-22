@@ -4,10 +4,9 @@ defmodule ChessClub.Repo.Migrations.CreateUsers do
   def change do
     create table(:users) do
       add :username, :string
-      add :password, :string
+      add :password_hashed, :string
 
       timestamps()
     end
-
   end
 end

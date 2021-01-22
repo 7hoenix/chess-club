@@ -33,19 +33,23 @@ defmodule ChessClub.UserManagerTest do
       user
     end
 
+    defp remove_virtual_fields(user) do
+      Map.merge(user, %{password: nil, password_confirmation: nil})
+    end
+
     test "list_users/0 returns all users" do
       user = user_fixture()
-      assert UserManager.list_users() == [Map.put(user, :password_confirmation, nil)]
+      assert UserManager.list_users() == [remove_virtual_fields(user)]
     end
 
     test "get_user!/1 returns the user with given id" do
       user = user_fixture()
-      assert UserManager.get_user!(user.id) == Map.put(user, :password_confirmation, nil)
+      assert UserManager.get_user!(user.id) == remove_virtual_fields(user)
     end
 
     test "create_user/1 with valid data creates a user" do
       assert {:ok, %User{} = user} = UserManager.create_user(@valid_attrs)
-      assert {:ok, user} == Argon2.check_pass(user, "some password", hash_key: :password)
+      assert {:ok, user} == Argon2.check_pass(user, "some password", hash_key: :password_hashed)
       assert user.username == "some username"
     end
 
@@ -61,14 +65,18 @@ defmodule ChessClub.UserManagerTest do
     test "update_user/2 with valid data updates the user" do
       user = user_fixture()
       assert {:ok, %User{} = user} = UserManager.update_user(user, @update_attrs)
-      assert {:ok, user} == Argon2.check_pass(user, "some updated password", hash_key: :password)
+
+      assert {:ok, user} ==
+               Argon2.check_pass(user, "some updated password", hash_key: :password_hashed)
+
       assert user.username == "some updated username"
     end
 
     test "update_user/2 with invalid data returns error changeset" do
       user = user_fixture()
       assert {:error, %Ecto.Changeset{}} = UserManager.update_user(user, @invalid_attrs)
-      assert Map.put(user, :password_confirmation, nil) == UserManager.get_user!(user.id)
+
+      assert remove_virtual_fields(user) == UserManager.get_user!(user.id)
     end
 
     test "delete_user/1 deletes the user" do
