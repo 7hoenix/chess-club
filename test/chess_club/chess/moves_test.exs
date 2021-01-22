@@ -16,7 +16,6 @@ defmodule ChessClub.MovesTest do
   # python virtualenv and that you have the underlying python chess
   # lib installed.
   describe "available_moves" do
-    @tag mustexec: true
     test "returns all available_moves", %{chess_server: server} do
       {moves, _} = Game.available_moves(server, @fen, [])
 

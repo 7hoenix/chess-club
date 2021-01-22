@@ -1,17 +1,26 @@
 defmodule ChessClubWeb.ScenarioTest do
   use ChessClubWeb.ConnCase
 
+  setup do
+    user = Factory.insert(:user)
+    {:ok, auth_token, _claims} = ChessClub.UserManager.Guardian.encode_and_sign(user)
+
+    authorized_conn =
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{auth_token}")
+
+    %{authorized_conn: authorized_conn}
+  end
+
   describe "create scenario" do
-    test "creates a new scenario" do
+    test "creates a new scenario", %{authorized_conn: authorized_conn} do
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 0
 
       mutation = """
       mutation { createScenario { currentState id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: mutation})
+      response = post(authorized_conn, "/api/graphql", %{query: mutation})
 
       scenario = List.last(ChessClub.all(ChessClub.Learn.Scenario))
 
@@ -24,10 +33,23 @@ defmodule ChessClubWeb.ScenarioTest do
                }
              }
     end
+
+    # NOTE: This test ensures that mutations's are authenticated.
+    test "returns unauthenticated error if no bearer token provided" do
+      mutation = """
+      mutation { createScenario { currentState id } }
+      """
+
+      response =
+        build_conn()
+        |> post("/api/graphql", %{query: mutation})
+
+      assert List.first(json_response(response, 200)["errors"])["message"] == "unauthenticated"
+    end
   end
 
   describe "get scenarios" do
-    test "returns all scenarios" do
+    test "returns all scenarios", %{authorized_conn: authorized_conn} do
       scenario = Factory.insert(:scenario)
 
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
@@ -36,9 +58,7 @@ defmodule ChessClubWeb.ScenarioTest do
       query { scenarios { id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(authorized_conn, "/api/graphql", %{query: query})
 
       assert json_response(response, 200) == %{
                "data" => %{
@@ -50,10 +70,27 @@ defmodule ChessClubWeb.ScenarioTest do
                }
              }
     end
+
+    # NOTE: This test ensures that query's are authenticated.
+    test "returns unauthenticated error if no bearer token provided" do
+      Factory.insert(:scenario)
+
+      assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
+
+      query = """
+      query { scenarios { id } }
+      """
+
+      response =
+        build_conn()
+        |> post("/api/graphql", %{query: query})
+
+      assert List.first(json_response(response, 200)["errors"])["message"] == "unauthenticated"
+    end
   end
 
   describe "get scenario by id" do
-    test "returns the correct scenario" do
+    test "returns the correct scenario", %{authorized_conn: authorized_conn} do
       Factory.insert(:scenario)
       scenario_b = Factory.insert(:scenario)
       Factory.insert(:scenario)
@@ -66,9 +103,7 @@ defmodule ChessClubWeb.ScenarioTest do
         }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(authorized_conn, "/api/graphql", %{query: query})
 
       assert json_response(response, 200) == %{
                "data" => %{
@@ -79,7 +114,7 @@ defmodule ChessClubWeb.ScenarioTest do
              }
     end
 
-    test "returns available_moves and current_state" do
+    test "returns available_moves and current_state", %{authorized_conn: authorized_conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -98,9 +133,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(authorized_conn, "/api/graphql", %{query: query})
 
       expected_moves = [
         %{
@@ -146,7 +179,7 @@ defmodule ChessClubWeb.ScenarioTest do
              }
     end
 
-    test "applies moves taken" do
+    test "applies moves taken", %{authorized_conn: authorized_conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -173,9 +206,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(authorized_conn, "/api/graphql", %{query: query})
 
       expected_current_state = "6k1/8/7K/8/7P/8/8/8 w - - 1 78"
 
@@ -244,7 +275,7 @@ defmodule ChessClubWeb.ScenarioTest do
   end
 
   describe "make_move" do
-    test "will make a move on a scenario" do
+    test "will make a move on a scenario", %{authorized_conn: authorized_conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -257,9 +288,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: mutation})
+      response = post(authorized_conn, "/api/graphql", %{query: mutation})
 
       expected_current_state = "6k1/8/7K/8/7P/8/8/8 w - - 1 78"
 

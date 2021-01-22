@@ -23,6 +23,10 @@ defmodule ChessClubWeb.Router do
     plug Guardian.Plug.EnsureAuthenticated
   end
 
+  pipeline :graphql do
+    plug ChessClub.UserManager.Context
+  end
+
   # LOGIN and LOGOUT
   scope "/", ChessClubWeb do
     pipe_through [:browser, :auth]
@@ -49,7 +53,7 @@ defmodule ChessClubWeb.Router do
   end
 
   scope "/api" do
-    pipe_through :api
+    pipe_through [:api, :graphql]
 
     forward "/graphical", Absinthe.Plug.GraphiQL,
       schema: ChessClubWeb.Schema,
