@@ -3,7 +3,7 @@ defmodule ChessClubWeb.Middleware.Authentication do
 
   def call(resolution, _config) do
     case resolution.context do
-      %{current_user: user} ->
+      %{current_user: _} ->
         resolution
 
       _ ->

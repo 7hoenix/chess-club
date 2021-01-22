@@ -21,7 +21,7 @@ defmodule ChessClubWeb.UserSocket do
     {:ok, current_user} = authorize(auth_token)
 
     socket =
-      Absinthe.Phoenix.Socket.put_opts(socket,
+      Absinthe.Phoenix.Socket.put_options(socket,
         context: %{
           current_user: current_user
         }
@@ -30,7 +30,7 @@ defmodule ChessClubWeb.UserSocket do
     {:ok, socket}
   end
 
-  def connect(_params, socket, _connect_info) do
+  def connect(_params, _socket, _connect_info) do
     :error
   end
 

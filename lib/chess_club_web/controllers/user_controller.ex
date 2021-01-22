@@ -18,7 +18,7 @@ defmodule ChessClubWeb.UserController do
 
   def create(conn, %{"user" => user_params}) do
     # TODO: what should happen if user account already exists or if user is signed in?
-    with {:ok, %User{} = user} <- UserManager.create_user(user_params) do
+    with {:ok, %User{} = _user} <- UserManager.create_user(user_params) do
       conn
       |> put_flash(:info, "User account created successfully.")
       |> redirect(to: Routes.session_path(conn, :login))

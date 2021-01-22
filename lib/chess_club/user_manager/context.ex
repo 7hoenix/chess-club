@@ -3,8 +3,6 @@ defmodule ChessClub.UserManager.Context do
 
   import Plug.Conn
 
-  alias ChessClub.{Repo, User}
-
   def init(opts), do: opts
 
   def call(conn, _) do
