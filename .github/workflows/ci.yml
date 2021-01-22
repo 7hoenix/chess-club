@@ -72,6 +72,9 @@ jobs:
       - name: Elixir Linting
         run: mix format
 
+      - name: Elixir Static Code Analysis
+        run: mix credo
+
       - name: Configure NPM Directories
         run: |
           mkdir "$NPM_CONFIG_PREFIX"
