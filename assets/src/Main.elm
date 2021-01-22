@@ -63,7 +63,8 @@ view : Model -> Browser.Document Msg
 view model =
     case model.page of
         NotFound _ ->
-            Skeleton.view never
+            Skeleton.view model.backendEndpoint
+                never
                 { title = "Not Found"
                 , header = []
                 , warning = Skeleton.NoProblems
@@ -72,7 +73,7 @@ view model =
                 }
 
         Learn learn ->
-            Skeleton.view LearnMsg (Learn.view learn)
+            Skeleton.view model.backendEndpoint LearnMsg (Learn.view learn)
 
 
 

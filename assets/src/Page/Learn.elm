@@ -8,6 +8,7 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
+import Chess.Game as Chess
 import Graphql.Document
 import Graphql.Http
 import Html exposing (..)
@@ -26,7 +27,8 @@ import Skeleton
 
 
 type alias Model =
-    { session : Session.Data
+    { chessModel : Maybe Chess.Model
+    , session : Session.Data
     , scenarios : Scenarios
     , subscriptionStatus : SubscriptionStatus
     , scenario : Maybe Scenario.Scenario
@@ -36,6 +38,7 @@ type alias Model =
 type SubscriptionStatus
     = Connected
     | NotConnected
+    | Reconnecting
 
 
 type Scenarios
@@ -48,12 +51,12 @@ init : Session.Data -> ( Model, Cmd Msg )
 init session =
     case Session.getScenarios session of
         Just entries ->
-            ( Model session (Success entries) NotConnected Nothing
+            ( Model Nothing session (Success entries) NotConnected Nothing
             , Cmd.none
             )
 
         Nothing ->
-            ( Model session Loading NotConnected Nothing
+            ( Model Nothing session Loading NotConnected Nothing
             , Cmd.batch
                 [ Scenario.getScenarios session.backendEndpoint GotScenarios
                 ]
@@ -65,7 +68,8 @@ init session =
 
 
 type Msg
-    = CreateScenario
+    = ChessMsg Chess.Msg
+    | CreateScenario
     | GetScenario Api.Scalar.Id
     | GotScenarios (Result (Graphql.Http.Error (List Scenario.ScenarioSeed)) (List Scenario.ScenarioSeed))
     | GotScenario (Result (Graphql.Http.Error Scenario.Scenario) Scenario.Scenario)
@@ -79,6 +83,14 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ChessMsg chessMsg ->
+            case model.chessModel of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just chessModel ->
+                    stepChess model (Chess.update (Chess.Callbacks MakeMove) chessMsg chessModel)
+
         CreateScenario ->
             ( model, Scenario.createScenario model.session.backendEndpoint ScenarioCreated )
 
@@ -108,8 +120,10 @@ update msg model =
                     )
 
                 Ok scenario ->
+                    -- TODO: chessModel is directly dependent on scenario. . . are we able to combine these somehow?
                     ( { model
                         | scenario = Just scenario
+                        , chessModel = Just <| Chess.init scenario.availableMoves scenario.currentState
                       }
                     , Js.createSubscriptions (subscribeToMoves scenario.id |> Graphql.Document.serializeSubscription)
                     )
@@ -153,13 +167,23 @@ update msg model =
                 Just scenario ->
                     case Json.Decode.decodeValue (subscribeToMoves scenario.id |> Graphql.Document.decoder) newData of
                         Ok s ->
-                            ( { model | scenario = Just s }, Cmd.none )
+                            ( { model
+                                | scenario = Just s
+                                , chessModel = Maybe.map (\chessModel -> { chessModel | game = Chess.makeGame s.availableMoves s.currentState }) model.chessModel
+                              }
+                            , Cmd.none
+                            )
 
                         Err error ->
                             ( model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
+
+
+stepChess : Model -> ( Chess.Model, Cmd Msg ) -> ( Model, Cmd Msg )
+stepChess model ( chessModel, chessCmds ) =
+    ( { model | chessModel = Just chessModel }, chessCmds )
 
 
 
@@ -173,9 +197,8 @@ view model =
     , warning = Skeleton.NoProblems
     , attrs = [ class "container mx-auto px-4" ]
     , children =
-        [ viewConnection model.subscriptionStatus
+        [ lazy3 viewLearn model.scenario model.chessModel model.subscriptionStatus
         , lazy viewScenarios model.scenarios
-        , lazy viewLearn model.scenario
         ]
     }
 
@@ -184,15 +207,18 @@ viewConnection : SubscriptionStatus -> Html Msg
 viewConnection status =
     case status of
         Connected ->
-            div [] [ text "Connected :tada:!" ]
+            div [ class "rounded-full bg-green-500 w-4 h-4" ] []
+
+        Reconnecting ->
+            div [ class "rounded-full bg-yellow-500 w-4 h-4" ] []
 
         NotConnected ->
-            div [] [ text "It seems we can't connect :( maybe try refreshing." ]
+            div [ class "rounded-full bg-red-500 w-4 h-4" ] []
 
 
 viewScenarios : Scenarios -> Html Msg
 viewScenarios scenarios =
-    div [ classList [ ( "scenarios", True ), ( "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4", True ) ] ]
+    div [ classList [ ( "scenarios", True ), ( "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex justify-end items-center space-x-4", True ) ] ]
         [ case scenarios of
             Failure ->
                 div [] []
@@ -231,14 +257,20 @@ viewSelectScenario { id } =
 -- VIEW LEARN
 
 
-viewLearn : Maybe Scenario.Scenario -> Html Msg
-viewLearn scenario =
+viewLearn : Maybe Scenario.Scenario -> Maybe Chess.Model -> SubscriptionStatus -> Html Msg
+viewLearn scenario chessModel subscriptionStatus =
     div [ class "p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4" ]
-        [ case scenario of
-            Just s ->
-                viewScenario s
+        [ case ( scenario, chessModel ) of
+            ( Just s, Just c ) ->
+                viewScenario s c subscriptionStatus
 
-            Nothing ->
+            ( Nothing, Just _ ) ->
+                div [] [ text "Scenario not loaded." ]
+
+            ( Just _, Nothing ) ->
+                div [] [ text "Chess not loaded." ]
+
+            ( Nothing, Nothing ) ->
                 div [] []
         ]
 
@@ -247,19 +279,11 @@ viewLearn scenario =
 -- VIEW SCENARIO
 
 
-viewScenario : Scenario.Scenario -> Html Msg
-viewScenario scenario =
+viewScenario : Scenario.Scenario -> Chess.Model -> SubscriptionStatus -> Html Msg
+viewScenario scenario chessModel subscriptionStatus =
     div [ class "container flex flex-col mx-auto px-4" ]
-        [ h3 [] [ text "Current state" ]
-        , div [] (List.map viewMakeMove scenario.availableMoves)
-        , p [ class "current-state" ] [ text scenario.currentState ]
-        ]
-
-
-viewMakeMove : Move -> Html Msg
-viewMakeMove move =
-    div []
-        [ button [ onClick (MakeMove move), class <| backgroundColor move.color ] [ text <| "Move " ++ move.squareFrom ++ move.squareTo ]
+        [ viewConnection subscriptionStatus
+        , Html.map ChessMsg (Chess.view chessModel)
         ]
 
 
@@ -281,4 +305,5 @@ subscriptions model =
     Sub.batch
         [ Js.gotSubscriptionData SubscriptionDataReceived
         , Js.socketStatusConnected (NewSubscriptionStatus Connected)
+        , Js.socketStatusReconnecting (NewSubscriptionStatus Reconnecting)
         ]

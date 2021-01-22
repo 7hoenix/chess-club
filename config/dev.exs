@@ -59,6 +59,7 @@ config :chess_club, ChessClubWeb.Endpoint,
 config :chess_club, ChessClubWeb.Endpoint,
   live_reload: [
     patterns: [
+      ~r"assets/src/.*/.*(elm)$",
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/chess_club_web/(live|views)/.*(ex)$",
