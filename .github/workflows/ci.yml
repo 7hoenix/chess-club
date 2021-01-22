@@ -90,15 +90,19 @@ jobs:
       - name: Elixir Tests
         run: mix test
 
-      - name: NPM Install
-        run: npm ci --prefix assets
+      - name: NPM Packages
+        run: |
+          npm ci --prefix assets
+          npm install -g wait-on
 
       - name: Gen GraphQL API
         run: |
           mix phx.server &
-          SERVER_PID=$! &&
-          sleep 5 &&
-          npm run gen-graphql --prefix assets &&
+          SERVER_PID=$!
+
+          wait-on http://127.0.0.1:4000
+          npm run gen-graphql --prefix assets
+
           kill $SERVER_PID
 
       - name: Elm Tests
