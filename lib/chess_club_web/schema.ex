@@ -67,7 +67,7 @@ defmodule ChessClubWeb.Schema do
   end
 
   def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
-      when identifier in [:query, :mutation] do
+      when identifier in [:query, :mutation, :subscription] do
     [ChessClubWeb.Middleware.Authentication | middleware]
   end
 

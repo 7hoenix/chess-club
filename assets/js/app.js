@@ -21,15 +21,16 @@ import { Elm } from "../src/Main.elm";
 let notifiers = [];
 
 document.addEventListener("DOMContentLoaded", function() {
+  const authToken = document.querySelector('body').dataset.authToken
   const socketUrl = document.querySelector('body').dataset.socketEndpoint
   const absintheSocket = AbsintheSocket.create(
-    new PhoenixSocket(socketUrl + "/socket")
+    new PhoenixSocket(socketUrl + "/socket", {params: {auth_token: authToken}})
   );
 
   const app = Elm.Main.init({
       flags: {
         backendEndpoint: document.querySelector('body').dataset.backendEndpoint,
-        authToken: document.querySelector('body').dataset.authToken
+        authToken: authToken
       }
   });
   app.ports.createSubscriptions.subscribe(function(subscription) {
