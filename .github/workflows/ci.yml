@@ -1,0 +1,109 @@
+name: 'CI'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Checks:
+    runs-on: ubuntu-18.04
+    env:
+      MIX_ENV: 'test'
+      NPM_CONFIG_PREFIX: ${{ github.workspace }}/.npm-global
+
+    services:
+      db:
+        image: postgres:11
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
+        with:
+          otp-version: '23.2.3'
+          elixir-version: '1.11.2'
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9.1'
+          architecture: 'x64'
+      - uses: jorelali/setup-elm@v2
+        with:
+          elm-version: 0.19.1
+      - uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+      - uses: actions/cache@v2
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-
+          restore-keys: |
+            ${{ runner.os }}-build-
+      - uses: actions/cache@v2
+        with:
+          path: assets/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles(format('{0}{1}', github.workspace, './assets/package-lock.json')) }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: |
+          pushd api
+          pip3 install -r requirements.txt
+          popd
+          mix deps.get
+
+      - name: Elixir Compile
+        run: mix compile --warnings-as-errors
+
+      - name: Elixir Linting
+        run: mix format
+
+      - name: Configure NPM Directories
+        run: |
+          mkdir "$NPM_CONFIG_PREFIX"
+          echo "$NPM_CONFIG_PREFIX/bin" >> $GITHUB_PATH
+
+      - name: Elm Linting
+        run: |
+          npm install -g elm-format
+          elm-format ./assets --validate
+
+      - name: Migrate Database
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+
+      - name: Elixir Tests
+        run: mix test
+
+      - name: NPM Packages
+        run: |
+          npm ci --prefix assets
+          npm install -g wait-on
+
+      - name: Gen GraphQL API
+        run: |
+          mix phx.server &
+          SERVER_PID=$!
+
+          wait-on http://127.0.0.1:4000
+          npm run gen-graphql --prefix assets
+
+          kill $SERVER_PID
+
+      - name: Elm Tests
+        run: npm run elm-test --prefix assets

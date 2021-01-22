@@ -7,11 +7,16 @@ defmodule Mix.Tasks.Ansible do
     {dir, _resp} = System.cmd("pwd", [])
     dir = String.trim(dir)
     mix_env = System.get_env("MIX_ENV")
-    app_name = Mix.Project.config()[:app]
-              |> Atom.to_string()
+
+    app_name =
+      Mix.Project.config()[:app]
+      |> Atom.to_string()
+
     app_version = Mix.Project.config()[:version]
-    app_port = Application.fetch_env!(:chess_club, :port)
-                |> to_string()
+
+    app_port =
+      Application.fetch_env!(:chess_club, :port)
+      |> to_string()
 
     System.cmd(
       "ansible-playbook",

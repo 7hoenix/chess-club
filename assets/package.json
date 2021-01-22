@@ -6,8 +6,8 @@
     "build-tw": "postcss -o ../priv/static/css/app.css css/app.css",
     "deploy": "npm run build-tw && NODE_ENV=production webpack --mode production",
     "watch": "webpack --mode development --watch",
-    "api": "elm-graphql http://localhost:4000/api/graphql",
-    "cypress": "cypress",
+    "gen-graphql": "elm-graphql http://127.0.0.1:4000/api/graphql",
+    "cypress": "cypress run",
     "elm": "elm",
     "elm-test": "elm-test"
   },
@@ -40,5 +40,6 @@
     "terser-webpack-plugin": "^2.3.2",
     "webpack": "4.41.5",
     "webpack-cli": "^3.3.2"
-  }
+  },
+  "name": "assets"
 }

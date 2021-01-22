@@ -7,7 +7,7 @@ defmodule ChessClubWeb.ScenarioResolver do
     {:ok, Enum.map(scenarios, &resolve_scenario/1)}
   end
 
-  def create(_root, args, _info) do
+  def create(_root, _args, _info) do
     {:ok, scenario} =
       ChessClub.Repo.insert(%Scenario{
         starting_state: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
