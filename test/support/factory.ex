@@ -23,7 +23,7 @@ defmodule ChessClub.Factory do
   def user_factory do
     %User{
       username: "joyce",
-      password: "password1"
+      password_hashed: "some_hashed_password"
     }
   end
 end
