@@ -14,6 +14,8 @@ ENV DATABASE_PASSWORD_PROD=$db_password
 
 WORKDIR /opt/build
 
+RUN apt-get make gcc libc-dev
+
 ADD ./bin/release ./bin/release
 
 CMD ["bin/release", $ENV]
