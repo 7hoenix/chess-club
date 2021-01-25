@@ -1,8 +1,8 @@
 defmodule ChessClub.UserManagerTest do
   use ChessClub.DataCase
 
-  alias ChessClub.UserManager
   alias Argon2
+  alias ChessClub.UserManager
 
   describe "users" do
     alias ChessClub.UserManager.User

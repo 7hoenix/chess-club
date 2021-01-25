@@ -2,7 +2,7 @@ defmodule ChessClubWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :chess_club
   use Absinthe.Phoenix.Endpoint
 
-  def socket_url() do
+  def socket_url do
     static_url()
     |> String.replace("https", "wss")
     |> String.replace("http", "ws")

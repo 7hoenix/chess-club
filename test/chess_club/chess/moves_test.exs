@@ -1,8 +1,8 @@
 defmodule ChessClub.MovesTest do
   use ExUnit.Case, async: true
 
-  alias ChessClub.Chess.Move
   alias ChessClub.Chess.Game
+  alias ChessClub.Chess.Move
 
   @fen "7k/8/7K/8/7P/8/8/8 b - - 0 77"
 

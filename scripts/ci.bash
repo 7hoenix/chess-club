@@ -10,7 +10,7 @@ echo ""
 echo ""
 
 echo "======Mix Credo======"
-mix credo
+mix credo --strict
 echo "SUCCESS"
 echo ""
 echo ""

@@ -69,6 +69,7 @@ defmodule ChessClubWeb do
 
       import ChessClubWeb.ErrorHelpers
       import ChessClubWeb.Gettext
+      # credo:disable-for-next-line
       alias ChessClubWeb.Router.Helpers, as: Routes
     end
   end

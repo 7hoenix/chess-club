@@ -86,7 +86,7 @@ jobs:
         run: mix credo --strict
 
       - name: Elixir Dialyzer
-        run: mix dialyzer --halt-exit-status
+        run: mix dialyzer
 
       - name: Configure NPM Directories
         run: |

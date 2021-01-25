@@ -1,6 +1,9 @@
 defmodule ChessClubWeb.PageController do
   use ChessClubWeb, :controller
 
+  alias ChessClub.UserManager.Guardian
+  alias Guardian.Plug
+
   def index(conn, _params) do
     conn
     |> put_layout("index.html")
@@ -8,8 +11,8 @@ defmodule ChessClubWeb.PageController do
   end
 
   def app(conn, _) do
-    user = Guardian.Plug.current_resource(conn)
-    {:ok, token, _claims} = ChessClub.UserManager.Guardian.encode_and_sign(user)
+    user = Plug.current_resource(conn)
+    {:ok, token, _claims} = Guardian.encode_and_sign(user)
 
     conn
     |> put_layout("app.html")
