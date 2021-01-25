@@ -65,4 +65,13 @@ defmodule ChessClubWeb.Schema do
       resolve(&ScenarioResolver.all/3)
     end
   end
+
+  def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
+      when identifier in [:query, :mutation, :subscription] do
+    [ChessClubWeb.Middleware.Authentication | middleware]
+  end
+
+  def middleware(middleware, _field, _object) do
+    middleware
+  end
 end

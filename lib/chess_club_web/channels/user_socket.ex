@@ -17,8 +17,21 @@ defmodule ChessClubWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
+  def connect(%{"auth_token" => auth_token}, socket, _connect_info) do
+    {:ok, current_user} = authorize(auth_token)
+
+    socket =
+      Absinthe.Phoenix.Socket.put_options(socket,
+        context: %{
+          current_user: current_user
+        }
+      )
+
     {:ok, socket}
+  end
+
+  def connect(_params, _socket, _connect_info) do
+    :error
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -33,4 +46,10 @@ defmodule ChessClubWeb.UserSocket do
   # Returning `nil` makes this socket anonymous.
   @impl true
   def id(_socket), do: nil
+
+  # TODO: duplicated from lib/chess_club/user_manager/context.ex
+  defp authorize(token) do
+    token
+    |> ChessClub.UserManager.Guardian.decode_and_verify(%{"typ" => "access"})
+  end
 end

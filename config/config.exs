@@ -34,6 +34,10 @@ config :chess_club, ChessClubWeb.Endpoint,
   pubsub_server: ChessClub.PubSub,
   live_view: [signing_salt: "Y60neo5S"]
 
+config :chess_club, ChessClub.UserManager.Guardian,
+  issuer: "chess_club",
+  secret_key: "J3jAwBCbnAa7Y33IQhcGOBoIaIDv7IKJfD7q4U1gA1mDnzJRe7tY9idHvIGh4lk9"
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

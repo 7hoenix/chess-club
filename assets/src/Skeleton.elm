@@ -4,6 +4,7 @@ module Skeleton exposing
     , view
     )
 
+import Backend exposing (Backend)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -32,20 +33,20 @@ type Warning
 -- VIEW
 
 
-view : String -> (a -> msg) -> Details a -> Browser.Document msg
-view backendEndpoint toMsg details =
+view : Backend -> (a -> msg) -> Details a -> Browser.Document msg
+view backend toMsg details =
     { title =
         details.title
     , body =
-        [ viewAll backendEndpoint toMsg details
+        [ viewAll backend toMsg details
         ]
     }
 
 
-viewAll : String -> (a -> msg) -> Details a -> Html msg
-viewAll backendEndpoint toMsg details =
+viewAll : Backend -> (a -> msg) -> Details a -> Html msg
+viewAll backend toMsg details =
     div [ class "flex flex-col w-screen min-h-screen" ]
-        [ viewHeader <| [ Link backendEndpoint "7I" ] ++ details.header
+        [ viewHeader <| [ Link (backend.endpoint ++ "/app") "7I" ] ++ details.header
         , viewBody toMsg details
         , viewFooter
         ]
