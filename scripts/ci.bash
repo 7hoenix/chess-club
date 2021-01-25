@@ -15,6 +15,12 @@ echo "SUCCESS"
 echo ""
 echo ""
 
+echo "======Mix Dialyzer======"
+mix dialyzer
+echo "SUCCESS"
+echo ""
+echo ""
+
 echo "======Mix Test======"
 mix test
 echo "SUCCESS"

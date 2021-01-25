@@ -11,8 +11,8 @@ defmodule ChessClubWeb.ScenarioResolver do
   def all(_root, _args, _info) do
     scenarios_with_state_and_moves =
       Scenario
-      |> ChessClub.all()
-      |> ChessClub.Repo.preload(:moves)
+      |> Repo.all()
+      |> Repo.preload(:moves)
       |> Enum.map(&enrich_scenario/1)
 
     {:ok, scenarios_with_state_and_moves}

@@ -2,6 +2,7 @@ defmodule Mix.Tasks.Ansible do
   @moduledoc "Run ansible playbooks"
   use Mix.Task
 
+  @impl Mix.Task
   def run([playbook]) do
     cmd_args = ["./rel/ansible/tasks/#{playbook}.yml"]
     {raw_dir, _resp} = System.cmd("pwd", [], env: [])
