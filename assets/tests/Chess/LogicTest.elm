@@ -4,7 +4,6 @@ import Chess.Logic as Chess exposing (Piece, PieceType(..), Square)
 import Chess.Position as Position exposing (Position(..))
 import Expect exposing (..)
 import Fuzz exposing (Fuzzer)
-import Set
 import Test exposing (..)
 
 
@@ -119,9 +118,71 @@ all =
             ]
         , describe "check mate" <|
             [ describe "knows if check is counterable (block, take, escape)" <|
-                [ test "welp looks like we need check lol" <|
+                [ test "no blocks, takes, or escape leads to checkmate" <|
                     \() ->
-                        Expect.true "basic" True
+                        let
+                            current =
+                                Chess.Occupied Position.h1 monarch
+
+                            attackers =
+                                [ Chess.Occupied Position.g8 opponentRook
+                                , Chess.Occupied Position.h7 opponentRook
+                                ]
+
+                            game =
+                                Chess.init (attackers ++ [ current ]) team
+                        in
+                        Expect.true "Double rooks should be checkmating here." (Chess.isCheckmate game)
+                , test "if escapable then not checkmate" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Position.h1 monarch
+
+                            attackers =
+                                [ Chess.Occupied Position.h7 opponentRook
+                                ]
+
+                            game =
+                                Chess.init (attackers ++ [ current ]) team
+                        in
+                        Expect.false "Monarch may move out of check." (Chess.isCheckmate game)
+                , test "if blockable then not checkmate" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Position.h1 monarch
+
+                            attackers =
+                                [ Chess.Occupied Position.g8 opponentRook
+                                , Chess.Occupied Position.h7 opponentRook
+                                ]
+
+                            blocker =
+                                Chess.Occupied Position.a2 rook
+
+                            game =
+                                Chess.init (attackers ++ [ current, blocker ]) team
+                        in
+                        Expect.false "Rook should be able to block." (Chess.isCheckmate game)
+                , test "if capturable then not checkmate" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Position.h1 monarch
+
+                            attackers =
+                                [ Chess.Occupied Position.g8 opponentRook
+                                , Chess.Occupied Position.h3 opponentRook
+                                ]
+
+                            taker =
+                                Chess.Occupied Position.f5 bishop
+
+                            game =
+                                Chess.init (attackers ++ [ current, taker ]) team
+                        in
+                        Expect.false "Bishop should be able to capture the attacking Rook." (Chess.isCheckmate game)
                 ]
             ]
         , describe "check" <|
@@ -148,11 +209,6 @@ all =
                                 Chess.init (attackers ++ [ current, opponentThatCantAttack, sameTeam ]) team
                         in
                         Expect.equal (List.sortBy position attackers) (List.sortBy position (Chess.findChecks game))
-                ]
-            , describe "knows if discovered move creates it" <|
-                [ test "welp looks like we need check lol" <|
-                    \() ->
-                        Expect.true "basic" True
                 ]
             ]
         , describe "canMoveTo" <|
@@ -339,6 +395,32 @@ all =
                                 (\pos -> List.member Position.a1 (Chess.canMoveTo pos game))
                                 Position.all
                             )
+                , test "restrict movement by turn" <|
+                    \() ->
+                        let
+                            current =
+                                Chess.Occupied Position.a1 opponentAdvisor
+
+                            game =
+                                Chess.init [ current ] team
+                        in
+                        Expect.equal [] (Chess.canMoveTo Position.a2 game)
+                , test "moves may not result in check" <|
+                    \() ->
+                        let
+                            protected =
+                                Chess.Occupied Position.a1 monarch
+
+                            pinned =
+                                Chess.Occupied Position.b1 advisor
+
+                            pinner =
+                                Chess.Occupied Position.c1 opponentAdvisor
+
+                            game =
+                                Chess.init [ protected, pinned, pinner ] team
+                        in
+                        Expect.equal [] (Chess.canMoveTo Position.b3 game)
                 ]
             ]
         ]
