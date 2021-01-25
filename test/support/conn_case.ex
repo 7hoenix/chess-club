@@ -17,6 +17,10 @@ defmodule ChessClubWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias ChessClub.Factory
+  alias ChessClub.UserManager.Guardian
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
       # Import conveniences for testing with connections
@@ -25,6 +29,7 @@ defmodule ChessClubWeb.ConnCase do
       import ChessClubWeb.ConnCase
 
       alias ChessClub.Factory
+      # credo:disable-for-next-line
       alias ChessClubWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
@@ -33,12 +38,22 @@ defmodule ChessClubWeb.ConnCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(ChessClub.Repo)
+    :ok = Sandbox.checkout(ChessClub.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(ChessClub.Repo, {:shared, self()})
+      Sandbox.mode(ChessClub.Repo, {:shared, self()})
     end
 
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+    user = Factory.insert(:user)
+    {:ok, auth_token, _claims} = Guardian.encode_and_sign(user)
+
+    authorized_conn =
+      Plug.Conn.put_req_header(
+        Phoenix.ConnTest.build_conn(),
+        "authorization",
+        "Bearer #{auth_token}"
+      )
+
+    {:ok, conn: Phoenix.ConnTest.build_conn(), authorized_conn: authorized_conn}
   end
 end

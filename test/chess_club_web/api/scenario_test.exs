@@ -1,20 +1,9 @@
 defmodule ChessClubWeb.ScenarioTest do
   use ChessClubWeb.ConnCase
 
-  setup do
-    user = Factory.insert(:user)
-    {:ok, auth_token, _claims} = ChessClub.UserManager.Guardian.encode_and_sign(user)
-
-    authorized_conn =
-      build_conn()
-      |> put_req_header("authorization", "Bearer #{auth_token}")
-
-    %{authorized_conn: authorized_conn}
-  end
-
   describe "create scenario" do
     test "creates a new scenario", %{authorized_conn: authorized_conn} do
-      assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 0
+      assert ChessClub.Learn.Scenario |> ChessClub.all() |> Enum.empty?()
 
       mutation = """
       mutation { createScenario { currentState id } }
@@ -35,14 +24,12 @@ defmodule ChessClubWeb.ScenarioTest do
     end
 
     # NOTE: This test ensures that mutations's are authenticated.
-    test "returns unauthenticated error if no bearer token provided" do
+    test "returns unauthenticated error if no bearer token provided", %{conn: conn} do
       mutation = """
       mutation { createScenario { currentState id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: mutation})
+      response = post(conn, "/api/graphql", %{query: mutation})
 
       assert List.first(json_response(response, 200)["errors"])["message"] == "unauthenticated"
     end
@@ -72,7 +59,7 @@ defmodule ChessClubWeb.ScenarioTest do
     end
 
     # NOTE: This test ensures that query's are authenticated.
-    test "returns unauthenticated error if no bearer token provided" do
+    test "returns unauthenticated error if no bearer token provided", %{conn: conn} do
       Factory.insert(:scenario)
 
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
@@ -81,9 +68,7 @@ defmodule ChessClubWeb.ScenarioTest do
       query { scenarios { id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(conn, "/api/graphql", %{query: query})
 
       assert List.first(json_response(response, 200)["errors"])["message"] == "unauthenticated"
     end

@@ -1,4 +1,5 @@
 defmodule ChessClub.Chess.Game do
+  @moduledoc "Encapsulates a python process to get available moves"
   use GenServer
 
   alias ChessClub.Chess.Move
@@ -21,24 +22,20 @@ defmodule ChessClub.Chess.Game do
 
   ## SERVER
 
-  @impl true
+  @impl GenServer
   def init(:ok) do
     {:ok, py} = :python.start([{:python_path, './api'}, {:python, 'python3'}])
     {:ok, %{chess_server: py}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:available_moves, %{fen: fen, moves_made: moves_made}}, _from, %{
         chess_server: server
       }) do
-    {:ok, request_body} = %{board: fen, moves_made: moves_made} |> Poison.encode()
+    {:ok, request_body} = Poison.encode(%{board: fen, moves_made: moves_made})
     body = :python.call(server, :app, :route_moves_erlport, [request_body])
 
-    %{moves: moves, current_state: current_state} =
-      body
-      |> extract_response()
-
-    {Enum.map(moves, &to_move/1), current_state}
+    %{moves: moves, current_state: current_state} = extract_response(body)
 
     {:reply, {Enum.map(moves, &to_move/1), current_state}, %{chess_server: server}}
   end
@@ -47,7 +44,7 @@ defmodule ChessClub.Chess.Game do
     body
     |> Poison.decode!()
     |> Map.take(@expected_fields)
-    |> Enum.reduce(%{}, fn {key, val}, acc -> Map.put(acc, String.to_atom(key), val) end)
+    |> Enum.reduce(%{}, fn {key, val}, acc -> Map.put(acc, String.to_existing_atom(key), val) end)
   end
 
   defp to_move(%{

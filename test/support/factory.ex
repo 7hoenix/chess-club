@@ -1,4 +1,5 @@
 defmodule ChessClub.Factory do
+  @moduledoc "Factory for creating data to support testing"
   use ExMachina.Ecto, repo: ChessClub.Repo
 
   alias ChessClub.Learn.Scenario

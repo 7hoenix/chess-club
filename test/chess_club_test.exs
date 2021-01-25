@@ -5,7 +5,7 @@ defmodule ChessClub.Learn.ScenarioTest do
 
   describe "all/1" do
     test "returns created scenarios" do
-      {:ok, created_scenario} = %Scenario{starting_state: "111"} |> Repo.insert()
+      {:ok, created_scenario} = Repo.insert(%Scenario{starting_state: "111"})
 
       [scenario] =
         Scenario

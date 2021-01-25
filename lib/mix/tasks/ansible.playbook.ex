@@ -1,4 +1,5 @@
 defmodule Mix.Tasks.Ansible.Playbook do
+  @moduledoc "Mix task to run ansible playbooks"
   use Mix.Task
 
   @shortdoc "Run ansible playbooks"

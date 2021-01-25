@@ -1,4 +1,5 @@
 defmodule ChessClub.UserManager.Guardian do
+  @moduledoc "Guardian implementation for Users"
   use Guardian, otp_app: :chess_club
 
   alias ChessClub.UserManager

@@ -1,7 +1,9 @@
 defmodule ChessClubWeb.UserController do
   use ChessClubWeb, :controller
 
-  alias ChessClub.{UserManager, UserManager.User, UserManager.Guardian}
+  alias ChessClub.UserManager
+  alias ChessClub.UserManager.User
+  alias UserManager.Guardian
 
   def new(conn, _) do
     changeset = UserManager.change_user(%User{})
@@ -17,7 +19,7 @@ defmodule ChessClubWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    # TODO: what should happen if user account already exists or if user is signed in?
+    # FOLLOWUP: what should happen if user account already exists or if user is signed in?
     with {:ok, %User{} = _user} <- UserManager.create_user(user_params) do
       conn
       |> put_flash(:info, "User account created successfully.")
