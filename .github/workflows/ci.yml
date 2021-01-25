@@ -48,12 +48,6 @@ jobs:
             ${{ runner.os }}-mix-
       - uses: actions/cache@v2
         with:
-          path: _build
-          key: ${{ runner.os }}-build-
-          restore-keys: |
-            ${{ runner.os }}-build-
-      - uses: actions/cache@v2
-        with:
           path: assets/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles(format('{0}{1}', github.workspace, './assets/package-lock.json')) }}
           restore-keys: |
