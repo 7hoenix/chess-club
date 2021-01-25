@@ -8,6 +8,7 @@ module Page.Learn exposing
     )
 
 import Api.Scalar exposing (Id)
+import Backend exposing (Backend)
 import Chess.Game as Chess
 import Graphql.Document
 import Graphql.Http
@@ -47,8 +48,8 @@ type Scenarios
     | Success (List Scenario.ScenarioSeed)
 
 
-init : Session.Data -> ( Model, Cmd Msg )
-init session =
+init : Backend -> Session.Data -> ( Model, Cmd Msg )
+init backend session =
     case Session.getScenarios session of
         Just entries ->
             ( Model Nothing session (Success entries) NotConnected Nothing
@@ -58,7 +59,7 @@ init session =
         Nothing ->
             ( Model Nothing session Loading NotConnected Nothing
             , Cmd.batch
-                [ Scenario.getScenarios session.backendEndpoint GotScenarios
+                [ Scenario.getScenarios backend GotScenarios
                 ]
             )
 
@@ -80,8 +81,8 @@ type Msg
     | SubscriptionDataReceived Json.Decode.Value
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Backend -> Msg -> Model -> ( Model, Cmd Msg )
+update backend msg model =
     case msg of
         ChessMsg chessMsg ->
             case model.chessModel of
@@ -92,10 +93,10 @@ update msg model =
                     stepChess model (Chess.update (Chess.Callbacks MakeMove) chessMsg chessModel)
 
         CreateScenario ->
-            ( model, Scenario.createScenario model.session.backendEndpoint ScenarioCreated )
+            ( model, Scenario.createScenario backend ScenarioCreated )
 
         GetScenario id ->
-            ( model, Scenario.getScenario model.session.backendEndpoint id GotScenario )
+            ( model, Scenario.getScenario backend id GotScenario )
 
         GotScenarios result ->
             case result of
@@ -132,7 +133,7 @@ update msg model =
             case model.scenario of
                 Just scenario ->
                     ( model
-                    , Scenario.makeMove model.session.backendEndpoint scenario.id move SentMove
+                    , Scenario.makeMove backend scenario.id move SentMove
                     )
 
                 Nothing ->
@@ -151,7 +152,7 @@ update msg model =
                 Ok id ->
                     case model.scenarios of
                         Success scenarios ->
-                            ( { model | scenarios = Success <| scenarios ++ [ Scenario.ScenarioSeed id ] }, Scenario.getScenario model.session.backendEndpoint id GotScenario )
+                            ( { model | scenarios = Success <| scenarios ++ [ Scenario.ScenarioSeed id ] }, Scenario.getScenario backend id GotScenario )
 
                         -- This state should not be possible (assuming we aren't able to click the create button unless we are loaded.
                         _ ->

@@ -27,7 +27,8 @@ defmodule ChessClubWeb.ConnCase do
       import ChessClubWeb.ConnCase
 
       alias ChessClub.Factory
-      alias ChessClubWeb.Router
+      # credo:disable-for-next-line
+      alias ChessClubWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint ChessClubWeb.Endpoint

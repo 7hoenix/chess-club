@@ -31,6 +31,10 @@ config :chess_club, ChessClubWeb.Endpoint,
   server: true,
   secret_key_base: secret_key_base
 
+config :chess_club, ChessClub.UserManager.Guardian,
+  issuer: "chess_club",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix

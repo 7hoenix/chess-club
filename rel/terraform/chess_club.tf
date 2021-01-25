@@ -192,7 +192,7 @@ resource "aws_key_pair" "chess_club" {
 resource "aws_instance" "chess_club" {
   count                  = local.az_count
   ami                    = "ami-0418d0e1b0321f723"
-  instance_type          = "t2.micro"
+  instance_type          = "t3.micro"
   key_name               = aws_key_pair.chess_club.key_name
   vpc_security_group_ids = [aws_security_group.chess_club_instance.id]
   subnet_id              = aws_subnet.chess_club_public[count.index].id

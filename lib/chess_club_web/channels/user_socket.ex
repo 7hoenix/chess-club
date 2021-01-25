@@ -2,6 +2,8 @@ defmodule ChessClubWeb.UserSocket do
   use Phoenix.Socket
   use Absinthe.Phoenix.Socket, schema: ChessClubWeb.Schema
 
+  alias ChessClub.UserManager.Guardian
+
   ## Channels
   # channel "room:*", ChessClubWeb.RoomChannel
 
@@ -17,8 +19,21 @@ defmodule ChessClubWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl Phoenix.Socket
-  def connect(_params, socket, _connect_info) do
+  def connect(%{"auth_token" => auth_token}, socket, _connect_info) do
+    {:ok, current_user} = authorize(auth_token)
+
+    socket =
+      Absinthe.Phoenix.Socket.put_options(socket,
+        context: %{
+          current_user: current_user
+        }
+      )
+
     {:ok, socket}
+  end
+
+  def connect(_params, _socket, _connect_info) do
+    :error
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -33,4 +48,9 @@ defmodule ChessClubWeb.UserSocket do
   # Returning `nil` makes this socket anonymous.
   @impl Phoenix.Socket
   def id(_socket), do: nil
+
+  # REFACTOR: duplicated from lib/chess_club/user_manager/context.ex
+  defp authorize(token) do
+    Guardian.decode_and_verify(token, %{"typ" => "access"})
+  end
 end

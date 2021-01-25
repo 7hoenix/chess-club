@@ -6,3 +6,5 @@ export DATABASE_URL_PROD='ecto://dbname:dbpassword@dburl.com'
 export DATABASE_USER_PROD='db_name'
 export DATABASE_PASSWORD_PROD='database_password'
 export DATABASE_HOST_PROD='db_host'
+
+export GUARDIAN_SECRET_KEY_PROD='SOME_GUARDIAN_SECRET_KEY'

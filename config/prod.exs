@@ -32,6 +32,8 @@ config :chess_club, ChessClub.Repo,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :argon2_elixir, parallelism: 2
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

@@ -23,7 +23,8 @@ defmodule ChessClubWeb do
 
       import Plug.Conn
       import ChessClubWeb.Gettext
-      alias ChessClubWeb.Router.Helpers
+      # credo:disable-for-next-line
+      alias ChessClubWeb.Router.Helpers, as: Routes
     end
   end
 
