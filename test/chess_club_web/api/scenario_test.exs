@@ -2,16 +2,14 @@ defmodule ChessClubWeb.ScenarioTest do
   use ChessClubWeb.ConnCase
 
   describe "create scenario" do
-    test "creates a new scenario" do
+    test "creates a new scenario", %{conn: conn} do
       assert ChessClub.Learn.Scenario |> ChessClub.all() |> Enum.empty?()
 
       mutation = """
       mutation { createScenario { currentState id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: mutation})
+      response = post(conn, "/api/graphql", %{query: mutation})
 
       scenario = List.last(ChessClub.all(ChessClub.Learn.Scenario))
 
@@ -27,7 +25,7 @@ defmodule ChessClubWeb.ScenarioTest do
   end
 
   describe "get scenarios" do
-    test "returns all scenarios" do
+    test "returns all scenarios", %{conn: conn} do
       scenario = Factory.insert(:scenario)
 
       assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 1
@@ -36,9 +34,7 @@ defmodule ChessClubWeb.ScenarioTest do
       query { scenarios { id } }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(conn, "/api/graphql", %{query: query})
 
       assert json_response(response, 200) == %{
                "data" => %{
@@ -53,7 +49,7 @@ defmodule ChessClubWeb.ScenarioTest do
   end
 
   describe "get scenario by id" do
-    test "returns the correct scenario" do
+    test "returns the correct scenario", %{conn: conn} do
       Factory.insert(:scenario)
       scenario_b = Factory.insert(:scenario)
       Factory.insert(:scenario)
@@ -66,9 +62,7 @@ defmodule ChessClubWeb.ScenarioTest do
         }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(conn, "/api/graphql", %{query: query})
 
       assert json_response(response, 200) == %{
                "data" => %{
@@ -79,7 +73,7 @@ defmodule ChessClubWeb.ScenarioTest do
              }
     end
 
-    test "returns available_moves and current_state" do
+    test "returns available_moves and current_state", %{conn: conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -98,9 +92,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(conn, "/api/graphql", %{query: query})
 
       expected_moves = [
         %{
@@ -146,7 +138,7 @@ defmodule ChessClubWeb.ScenarioTest do
              }
     end
 
-    test "applies moves taken" do
+    test "applies moves taken", %{conn: conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -173,9 +165,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: query})
+      response = post(conn, "/api/graphql", %{query: query})
 
       expected_current_state = "6k1/8/7K/8/7P/8/8/8 w - - 1 78"
 
@@ -244,7 +234,7 @@ defmodule ChessClubWeb.ScenarioTest do
   end
 
   describe "make_move" do
-    test "will make a move on a scenario" do
+    test "will make a move on a scenario", %{conn: conn} do
       starting_state = "7k/8/7K/8/7P/8/8/8 b - - 0 77"
       scenario = Factory.insert(:scenario, %{starting_state: starting_state})
 
@@ -257,9 +247,7 @@ defmodule ChessClubWeb.ScenarioTest do
       }
       """
 
-      response =
-        build_conn()
-        |> post("/api/graphql", %{query: mutation})
+      response = post(conn, "/api/graphql", %{query: mutation})
 
       expected_current_state = "6k1/8/7K/8/7P/8/8/8 w - - 1 78"
 

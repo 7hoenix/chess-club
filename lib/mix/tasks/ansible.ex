@@ -4,18 +4,16 @@ defmodule Mix.Tasks.Ansible do
 
   def run([playbook]) do
     cmd_args = ["./rel/ansible/tasks/#{playbook}.yml"]
-    {dir, _resp} = System.cmd("pwd", [])
-    dir = String.trim(dir)
+    {raw_dir, _resp} = System.cmd("pwd", [], env: [])
+    dir = String.trim(raw_dir)
     mix_env = System.get_env("MIX_ENV")
 
-    app_name =
-      Mix.Project.config()[:app]
-      |> Atom.to_string()
-
+    app_name = Atom.to_string(Mix.Project.config()[:app])
     app_version = Mix.Project.config()[:version]
 
     app_port =
-      Application.fetch_env!(:chess_club, :port)
+      :chess_club
+      |> Application.fetch_env!(:port)
       |> to_string()
 
     System.cmd(

@@ -7,7 +7,7 @@ defmodule Mix.Tasks.Docker.Build do
   def run([env]) do
     build_image(env)
 
-    {dir, _resp} = System.cmd("pwd", [])
+    {dir, _resp} = System.cmd("pwd", [], env: [])
 
     docker(
       "run -v #{String.trim(dir)}:/opt/build --rm -i #{@app_name}:latest /opt/build/bin/release #{
@@ -38,6 +38,6 @@ defmodule Mix.Tasks.Docker.Build do
   end
 
   defp docker(cmd) do
-    System.cmd("docker", String.split(cmd, " "), into: IO.stream(:stdio, :line))
+    System.cmd("docker", String.split(cmd, " "), into: IO.stream(:stdio, :line), env: [])
   end
 end

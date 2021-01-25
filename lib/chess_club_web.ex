@@ -23,7 +23,7 @@ defmodule ChessClubWeb do
 
       import Plug.Conn
       import ChessClubWeb.Gettext
-      alias ChessClubWeb.Router.Helpers, as: Routes
+      alias ChessClubWeb.Router.Helpers
     end
   end
 

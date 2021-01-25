@@ -16,7 +16,7 @@ defmodule ChessClubWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  @impl true
+  @impl Socket
   def connect(_params, socket, _connect_info) do
     {:ok, socket}
   end
@@ -31,6 +31,6 @@ defmodule ChessClubWeb.UserSocket do
   #     ChessClubWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  @impl true
+  @impl Socket
   def id(_socket), do: nil
 end

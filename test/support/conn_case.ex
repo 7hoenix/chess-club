@@ -17,6 +17,8 @@ defmodule ChessClubWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
       # Import conveniences for testing with connections
@@ -25,7 +27,7 @@ defmodule ChessClubWeb.ConnCase do
       import ChessClubWeb.ConnCase
 
       alias ChessClub.Factory
-      alias ChessClubWeb.Router.Helpers, as: Routes
+      alias ChessClubWeb.Router
 
       # The default endpoint for testing
       @endpoint ChessClubWeb.Endpoint
@@ -33,10 +35,10 @@ defmodule ChessClubWeb.ConnCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(ChessClub.Repo)
+    :ok = Sandbox.checkout(ChessClub.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(ChessClub.Repo, {:shared, self()})
+      Sandbox.mode(ChessClub.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
