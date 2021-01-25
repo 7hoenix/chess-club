@@ -1,4 +1,5 @@
 defmodule ChessClub.UserManager.Pipeline do
+  @moduledoc "Plug Pipeline for User Authentication"
   use Guardian.Plug.Pipeline,
     otp_app: :chess_club,
     error_handler: ChessClub.UserManager.ErrorHandler,

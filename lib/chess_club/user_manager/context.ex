@@ -1,16 +1,21 @@
 defmodule ChessClub.UserManager.Context do
+  @moduledoc "Authentication middleware"
   @behaviour Plug
 
   import Plug.Conn
 
+  alias ChessClub.UserManager.Guardian
+
+  @impl Plug
   def init(opts), do: opts
 
+  @impl Plug
   def call(conn, _) do
     context = build_context(conn)
     Absinthe.Plug.put_options(conn, context: context)
   end
 
-  def build_context(conn) do
+  defp build_context(conn) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
          {:ok, current_user} <- authorize(token) do
       %{current_user: current_user}
@@ -21,7 +26,6 @@ defmodule ChessClub.UserManager.Context do
   end
 
   defp authorize(token) do
-    token
-    |> ChessClub.UserManager.Guardian.decode_and_verify(%{"typ" => "access"})
+    Guardian.decode_and_verify(token, %{"typ" => "access"})
   end
 end

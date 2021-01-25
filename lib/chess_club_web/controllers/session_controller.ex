@@ -1,7 +1,9 @@
 defmodule ChessClubWeb.SessionController do
   use ChessClubWeb, :controller
 
-  alias ChessClub.{UserManager, UserManager.User, UserManager.Guardian}
+  alias ChessClub.UserManager
+  alias UserManager.Guardian
+  alias UserManager.User
 
   def new(conn, _) do
     changeset = UserManager.change_user(%User{})
@@ -17,7 +19,8 @@ defmodule ChessClubWeb.SessionController do
   end
 
   def login(conn, %{"user" => %{"username" => username, "password" => password}}) do
-    UserManager.authenticate_user(username, password)
+    username
+    |> UserManager.authenticate_user(password)
     |> login_reply(conn)
   end
 
