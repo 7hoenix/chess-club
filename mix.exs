@@ -11,7 +11,7 @@ defmodule ChessClub.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix, :ex_unit]],
+      dialyzer: dialyzer(),
       releases: [
         prod: [
           include_executables_for: [:unix],
@@ -69,6 +69,14 @@ defmodule ChessClub.MixProject do
       {:ex_machina, "~> 2.4", only: [:dev, :test]},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:phoenix_live_reload, "~> 1.2", only: :dev}
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_core_path: "priv/plts",
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:mix, :ex_unit]
     ]
   end
 
