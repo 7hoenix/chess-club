@@ -1,4 +1,6 @@
 defmodule ChessClub.Learn.Move do
+  @moduledoc "Ecto Schema for moves in a scenario"
+
   use Ecto.Schema
   import Ecto.Changeset
   alias ChessClub.Learn.Scenario

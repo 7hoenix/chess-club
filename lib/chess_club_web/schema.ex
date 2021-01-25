@@ -1,4 +1,6 @@
 defmodule ChessClubWeb.Schema do
+  @moduledoc "Absinthe GraphQL schema"
+
   use Absinthe.Schema
 
   alias ChessClubWeb.ScenarioResolver
@@ -11,7 +13,7 @@ defmodule ChessClubWeb.Schema do
 
   object :move do
     @desc "The square where the piece was before (in algebraic notation)."
-    #    TODO: possible to enumerate through all to get better type guarantees?
+    # possible to enumerate through all to get better type guarantees?
     field :square_from, non_null(:string)
     @desc "The square where the piece will be after the move (in algebraic notation)."
     field :square_to, non_null(:string)

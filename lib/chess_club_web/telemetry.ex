@@ -1,4 +1,6 @@
 defmodule ChessClubWeb.Telemetry do
+  @moduledoc "Exposes telemetry data on application and VM host metrics"
+
   use Supervisor
   import Telemetry.Metrics
 

@@ -3,7 +3,7 @@ defmodule ChessClubWeb.ScenarioTest do
 
   describe "create scenario" do
     test "creates a new scenario" do
-      assert length(ChessClub.all(ChessClub.Learn.Scenario)) == 0
+      assert ChessClub.Learn.Scenario |> ChessClub.all() |> Enum.empty?()
 
       mutation = """
       mutation { createScenario { currentState id } }

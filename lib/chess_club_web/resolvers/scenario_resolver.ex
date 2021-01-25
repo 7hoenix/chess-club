@@ -1,34 +1,57 @@
 defmodule ChessClubWeb.ScenarioResolver do
-  alias ChessClub.Learn.Scenario
+  @moduledoc "Scenario Resolver for GraphQL queries"
+
   alias ChessClub.Chess.Game
+  alias ChessClub.Learn.Move
+  alias ChessClub.Learn.Scenario
+  alias ChessClub.Repo
+
+  @starting_state "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
   def all(_root, _args, _info) do
-    scenarios = ChessClub.all(Scenario) |> ChessClub.Repo.preload(:moves)
-    {:ok, Enum.map(scenarios, &resolve_scenario/1)}
+    scenarios_with_state_and_moves =
+      Scenario
+      |> ChessClub.all()
+      |> ChessClub.Repo.preload(:moves)
+      |> Enum.map(&enrich_scenario/1)
+
+    {:ok, scenarios_with_state_and_moves}
   end
 
   def create(_root, _args, _info) do
-    {:ok, scenario} =
-      ChessClub.Repo.insert(%Scenario{
-        starting_state: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-      })
+    {:ok, scenario} = Repo.insert(%Scenario{starting_state: @starting_state})
 
-    {:ok, resolve_scenario(scenario |> ChessClub.Repo.preload(:moves))}
+    scenario_with_state_and_moves =
+      scenario
+      |> Repo.preload(:moves)
+      |> enrich_scenario()
+
+    {:ok, scenario_with_state_and_moves}
   end
 
   def get(_root, args, _info) do
-    scenario = ChessClub.Repo.get(Scenario, args.scenario_id) |> ChessClub.Repo.preload(:moves)
-    {:ok, resolve_scenario(scenario)}
+    scenario_with_state_and_moves =
+      Scenario
+      |> Repo.get(args.scenario_id)
+      |> ChessClub.Repo.preload(:moves)
+      |> enrich_scenario()
+
+    {:ok, scenario_with_state_and_moves}
   end
 
   def make_move(_root, args, _info) do
-    changeset = ChessClub.Learn.Move.changeset(%ChessClub.Learn.Move{}, args)
-    {:ok, _} = ChessClub.Repo.insert(changeset)
-    scenario = ChessClub.Repo.get(Scenario, args.scenario_id) |> ChessClub.Repo.preload(:moves)
-    {:ok, resolve_scenario(scenario)}
+    {:ok, _} = %Move{} |> Move.changeset(args) |> Repo.insert()
+
+    scenario_with_state_and_moves =
+      Scenario
+      |> ChessClub.Repo.get(args.scenario_id)
+      |> ChessClub.Repo.preload(:moves)
+      |> enrich_scenario()
+
+    {:ok, scenario_with_state_and_moves}
   end
 
-  defp resolve_scenario(scenario) do
+  defp enrich_scenario(scenario) do
     move_commands = Enum.map(scenario.moves, & &1.move_command)
 
     {available_moves, current_state} =

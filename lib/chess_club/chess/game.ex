@@ -1,4 +1,5 @@
 defmodule ChessClub.Chess.Game do
+  @moduledoc "Encapsulates a python process to get available moves"
   use GenServer
 
   alias ChessClub.Chess.Move
@@ -37,8 +38,6 @@ defmodule ChessClub.Chess.Game do
     %{moves: moves, current_state: current_state} =
       body
       |> extract_response()
-
-    {Enum.map(moves, &to_move/1), current_state}
 
     {:reply, {Enum.map(moves, &to_move/1), current_state}, %{chess_server: server}}
   end

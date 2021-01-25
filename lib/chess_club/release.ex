@@ -1,4 +1,5 @@
 defmodule ChessClub.Release do
+  @moduledoc "Functions to support migrations on release"
   @app :chess_club
 
   def migrate do

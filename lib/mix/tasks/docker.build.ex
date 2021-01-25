@@ -1,9 +1,9 @@
 defmodule Mix.Tasks.Docker.Build do
+  @moduledoc "Docker utilities for building releases"
   use Mix.Task
 
   @app_name "chess_club"
 
-  @shortdoc "Docker utilities for building releases."
   def run([env]) do
     build_image(env)
 
