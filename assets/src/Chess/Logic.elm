@@ -13,6 +13,7 @@ module Chess.Logic exposing
 
 import Chess.Position as Position exposing (Position(..))
 import Dict exposing (Dict)
+import Graph.Tree as Tree exposing (Tree)
 import Set exposing (Set)
 
 
@@ -76,6 +77,7 @@ init squares turn =
 
 type ForcingWeight
     = CheckMate
+    | Check
 
 
 type alias ForcingMove =
@@ -85,13 +87,34 @@ type alias ForcingMove =
     }
 
 
-forcingMoves : Game -> List ForcingMove
+forcingMoves : Game -> List (Tree ForcingMove)
 forcingMoves game =
+    forcingMovesInner game [] 0
+
+
+
+--let
+--    checkmates =
+--        List.map (\mate -> Tree.leaf mate) <| findCheckmates game
+--
+--    checks =
+--        List.map (\check -> Tree.leaf check) <| findChecks2 game
+--in
+--checkmates
+--inner : label -> List (Tree label) -> Tree label
+
+
+forcingMovesInner : Game -> List (Tree ForcingMove) -> Int -> List (Tree ForcingMove)
+forcingMovesInner game tree depth =
     let
         checkmates =
-            findCheckmates game
+            List.map (\mate -> Tree.inner mate tree) <| findCheckmates game
+
+        checks =
+            (List.map (\check -> Tree.inner check tree) <| findPotentialChecks game)
+                |> Debug.log "checks"
     in
-    checkmates
+    []
 
 
 findCheckmates : Game -> List ForcingMove
@@ -112,7 +135,27 @@ leadsToCheckmate squareFrom squareTo game =
         |> isCheckmate
 
 
+findPotentialChecks : Game -> List ForcingMove
+findPotentialChecks game =
+    List.concatMap (findChecksForPosition game) Position.all
 
+
+findChecksForPosition : Game -> Position -> List ForcingMove
+findChecksForPosition game ((Position column row) as squareTo) =
+    canMoveTo squareTo game
+        |> List.filter (\squareFrom -> leadsToCheck squareFrom squareTo game)
+        |> List.map (\squareFromThatIsCheck -> ForcingMove squareTo squareFromThatIsCheck Check)
+
+
+leadsToCheck : Position -> Position -> Game -> Bool
+leadsToCheck squareFrom squareTo game =
+    makeMove (positionToSquareKey squareFrom) (positionToSquareKey squareTo) game
+        |> findChecks
+        |> (not << List.isEmpty)
+
+
+
+--|> List.map (\(Occupied squareFrom piece) -> ForcingMove squareTo squareFrom Check)
 -- CHECKMATE
 
 

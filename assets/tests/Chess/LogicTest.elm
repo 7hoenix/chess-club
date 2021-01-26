@@ -4,6 +4,7 @@ import Chess.Logic as Chess exposing (Piece, PieceType(..), Square)
 import Chess.Position as Position exposing (Position(..))
 import Expect exposing (..)
 import Fuzz exposing (Fuzzer)
+import Graph.Tree as Tree
 import Test exposing (..)
 
 
@@ -111,28 +112,51 @@ all =
     describe "Chess"
         [ describe "forcingMoves" <|
             [ describe "recognizes checkmate as bottom" <|
-                [ test "will find checkmate" <|
-                    \() ->
-                        let
-                            current =
-                                Chess.Occupied Position.h1 monarch
+                [ only <|
+                    test "will find checkmate" <|
+                        \() ->
+                            let
+                                current =
+                                    Chess.Occupied Position.h1 monarch
 
-                            attackers =
-                                [ Chess.Occupied Position.g8 opponentRook
-                                , Chess.Occupied Position.g7 opponentRook
-                                ]
+                                attackers =
+                                    [ Chess.Occupied Position.g8 opponentRook
+                                    , Chess.Occupied Position.g7 opponentRook
+                                    ]
 
-                            game =
-                                Chess.init (attackers ++ [ current ]) opponentTeam
+                                game =
+                                    Chess.init (attackers ++ [ current ]) opponentTeam
 
-                            expectedForcingMoves =
-                                [ { squareTo = Position.h8, squareFrom = Position.g8, value = Chess.CheckMate }
-                                , { squareTo = Position.h7, squareFrom = Position.g7, value = Chess.CheckMate }
-                                ]
-                        in
-                        Expect.equal expectedForcingMoves (Chess.forcingMoves game)
+                                expectedForcingMoves =
+                                    [ Tree.leaf { squareTo = Position.h8, squareFrom = Position.g8, value = Chess.CheckMate }
+                                    , Tree.leaf { squareTo = Position.h7, squareFrom = Position.g7, value = Chess.CheckMate }
+                                    ]
+                            in
+                            Expect.equal expectedForcingMoves (Chess.forcingMoves game)
 
-                --[ test "will lose material to achieve checkmate" <|
+                --, only <|
+                --    test "will find checkmate with a check" <|
+                --        \() ->
+                --            let
+                --                current =
+                --                    Chess.Occupied Position.g1 monarch
+                --
+                --                attackers =
+                --                    [ Chess.Occupied Position.e8 opponentRook
+                --                    , Chess.Occupied Position.f7 opponentRook
+                --                    ]
+                --
+                --                game =
+                --                    Chess.init (attackers ++ [ current ]) opponentTeam
+                --
+                --                expectedForcingMoves =
+                --                    [ Tree.inner { squareTo = Position.g8, squareFrom = Position.e8, value = Chess.Check }
+                --                        [ Tree.leaf { squareTo = Position.h8, squareFrom = Position.g8, value = Chess.CheckMate }
+                --                        ]
+                --                    ]
+                --            in
+                --            Expect.equal expectedForcingMoves (Chess.forcingMoves game)
+                ----[ test "will lose material to achieve checkmate" <|
                 ]
             ]
         , describe "check mate" <|
