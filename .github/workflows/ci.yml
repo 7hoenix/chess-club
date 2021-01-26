@@ -69,12 +69,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install Dependencies
+      - name: Install Python Deps
         run: |
           pushd api
           pip3 install -r requirements.txt
           popd
-          mix deps.get
+
+      - name: Install Elixir Deps
+        run: mix deps.get
 
       - name: Elixir Compile
         run: mix compile --warnings-as-errors
