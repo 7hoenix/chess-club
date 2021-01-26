@@ -1,0 +1,3 @@
+# Dialyzer plt's
+*.plt
+*.plt.hash
