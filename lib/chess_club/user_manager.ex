@@ -3,12 +3,11 @@ defmodule ChessClub.UserManager do
   The UserManager context.
   """
 
-  import Ecto.Query, warn: false
+  import Ecto.Query, only: [from: 2]
+
   alias ChessClub.Repo
 
   alias ChessClub.UserManager.User
-
-  import Ecto.Query, only: [from: 2]
 
   def authenticate_user(username, plain_text_password) do
     query = from u in User, where: u.username == ^username

@@ -16,7 +16,7 @@ jobs:
       NPM_CONFIG_PREFIX: ${{ github.workspace }}/.npm-global
 
     services:
-      db:
+      postgres:
         image: postgres:11
         ports: ['5432:5432']
         env:
@@ -40,18 +40,28 @@ jobs:
       - uses: jorelali/setup-elm@v2
         with:
           elm-version: 0.19.1
+
       - uses: actions/cache@v2
         with:
           path: deps
           key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
           restore-keys: |
             ${{ runner.os }}-mix-
+
       - uses: actions/cache@v2
         with:
           path: _build
           key: ${{ runner.os }}-build-
           restore-keys: |
             ${{ runner.os }}-build-
+
+      - uses: actions/cache@v2
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-plts-
+
       - uses: actions/cache@v2
         with:
           path: assets/node_modules
@@ -59,21 +69,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install Dependencies
+      - name: Install Python Deps
         run: |
           pushd api
           pip3 install -r requirements.txt
           popd
-          mix deps.get
+
+      - name: Install Elixir Deps
+        run: mix deps.get
 
       - name: Elixir Compile
         run: mix compile --warnings-as-errors
 
       - name: Elixir Linting
-        run: mix format
+        run: mix format --check-formatted
 
       - name: Elixir Static Code Analysis
-        run: mix credo
+        run: mix credo --strict
+
+      - name: Elixir Dialyzer
+        run: mix dialyzer
 
       - name: Configure NPM Directories
         run: |

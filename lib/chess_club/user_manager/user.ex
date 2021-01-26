@@ -1,6 +1,7 @@
 defmodule ChessClub.UserManager.User do
   @moduledoc "Ecto schema for Users"
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @required_attributes [:username, :password, :password_confirmation]

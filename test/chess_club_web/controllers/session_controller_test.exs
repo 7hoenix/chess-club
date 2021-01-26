@@ -1,8 +1,8 @@
 defmodule ChessClubWeb.SessionControllerTest do
   use ChessClubWeb.ConnCase
 
-  alias ChessClub.UserManager.User
   alias ChessClub.UserManager
+  alias ChessClub.UserManager.User
 
   test "GET /login", %{conn: conn} do
     conn = get(conn, "/login")

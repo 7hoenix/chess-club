@@ -10,7 +10,13 @@ echo ""
 echo ""
 
 echo "======Mix Credo======"
-mix credo
+mix credo --strict
+echo "SUCCESS"
+echo ""
+echo ""
+
+echo "======Mix Dialyzer======"
+mix dialyzer
 echo "SUCCESS"
 echo ""
 echo ""

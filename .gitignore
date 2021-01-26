@@ -64,3 +64,9 @@ venv
 .toolversions
 /assets/.tool-versions
 
+# Dialyzer plt's
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
+
+
+
