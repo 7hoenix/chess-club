@@ -1,15 +1,17 @@
 module Chess.Logic exposing
-    ( Piece(..)
+    ( ForcingWeight(..)
+    , Piece(..)
     , PieceType(..)
     , Square(..)
     , Team(..)
     , canMoveTo
     , findChecks
+    , forcingMoves
     , init
     , isCheckmate
     )
 
-import Chess.Position exposing (Position(..))
+import Chess.Position as Position exposing (Position(..))
 import Dict exposing (Dict)
 import Set exposing (Set)
 
@@ -70,6 +72,47 @@ init squares turn =
 
 
 -- FORCING MOVES
+
+
+type ForcingWeight
+    = CheckMate
+
+
+type alias ForcingMove =
+    { squareTo : Position
+    , squareFrom : Position
+    , value : ForcingWeight
+    }
+
+
+forcingMoves : Game -> List ForcingMove
+forcingMoves game =
+    let
+        checkmates =
+            findCheckmates game
+    in
+    checkmates
+
+
+findCheckmates : Game -> List ForcingMove
+findCheckmates game =
+    List.concatMap (findCheckmatesForPosition game) Position.all
+
+
+findCheckmatesForPosition : Game -> Position -> List ForcingMove
+findCheckmatesForPosition game ((Position column row) as squareTo) =
+    canMoveTo squareTo game
+        |> List.filter (\squareFrom -> leadsToCheckmate squareFrom squareTo game)
+        |> List.map (\squareFromThatIsCheckmate -> ForcingMove squareTo squareFromThatIsCheckmate CheckMate)
+
+
+leadsToCheckmate : Position -> Position -> Game -> Bool
+leadsToCheckmate squareFrom squareTo game =
+    makeMove (positionToSquareKey squareFrom) (positionToSquareKey squareTo) game
+        |> isCheckmate
+
+
+
 -- CHECKMATE
 
 

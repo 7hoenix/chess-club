@@ -110,10 +110,29 @@ all : Test
 all =
     describe "Chess"
         [ describe "forcingMoves" <|
-            [ describe "considers checks to be forcing" <|
-                [ test "welp looks like we need check lol" <|
+            [ describe "recognizes checkmate as bottom" <|
+                [ test "will find checkmate" <|
                     \() ->
-                        Expect.true "basic" True
+                        let
+                            current =
+                                Chess.Occupied Position.h1 monarch
+
+                            attackers =
+                                [ Chess.Occupied Position.g8 opponentRook
+                                , Chess.Occupied Position.g7 opponentRook
+                                ]
+
+                            game =
+                                Chess.init (attackers ++ [ current ]) opponentTeam
+
+                            expectedForcingMoves =
+                                [ { squareTo = Position.h8, squareFrom = Position.g8, value = Chess.CheckMate }
+                                , { squareTo = Position.h7, squareFrom = Position.g7, value = Chess.CheckMate }
+                                ]
+                        in
+                        Expect.equal expectedForcingMoves (Chess.forcingMoves game)
+
+                --[ test "will lose material to achieve checkmate" <|
                 ]
             ]
         , describe "check mate" <|
