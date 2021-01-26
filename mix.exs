@@ -91,7 +91,18 @@ defmodule ChessClub.MixProject do
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      ci: ["cmd ./scripts/ci.bash"],
+      test: [
+        "ecto.drop --quiet",
+        "cmd printf 'Dropping/creating/migrating test database'",
+        "cmd printf '.'",
+        "ecto.create --quiet",
+        "cmd printf '.'",
+        "ecto.migrate --quiet",
+        "cmd printf '.'",
+        "cmd echo ''",
+        "test"
+      ]
     ]
   end
 end
