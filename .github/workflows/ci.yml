@@ -125,3 +125,25 @@ jobs:
 
       - name: Elm Tests
         run: npm run elm-test --prefix assets
+
+      - name: Xref Graph Gen/Upload
+        id: xref
+        run: |
+          mix xref graph --format dot
+          sudo apt-get install -y jq graphviz
+          dot -Tpng -Grankdir=LR xref_graph.dot -o xref_graph.png
+          _image_url=$(curl \
+            --request POST \
+            --url https://api.imgur.com/3/image \
+            --header 'authorization: Client-ID 9bfa26748526f32' \
+            --header 'content-type: multipart/form-data;' \
+            -F "image=@$(pwd)/xref_graph.png" | jq '.data.link')
+          _image_html="<img alt=\"Xref Graph\" src=$_image_url>"
+          echo "_image_html=$_image_html" >> $GITHUB_ENV
+
+      - name: Add Xref Graph to PR Comment
+        uses: thollander/actions-comment-pull-request@master
+        with:
+          message: ${{ env._image_html }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
